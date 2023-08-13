@@ -80,7 +80,7 @@ pipeline {
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
-
+                step{
                 container('kubectl') {
                     try {
                     sh '''
@@ -96,6 +96,7 @@ pipeline {
                     sh '''
                     kubectl -f kubernetes/standard/config-kube.yml -n testing
                     '''
+                }
                 }
             }
         }
