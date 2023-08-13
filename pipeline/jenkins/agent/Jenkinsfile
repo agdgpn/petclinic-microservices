@@ -16,7 +16,7 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
     node(POD_LABEL) {
 
         stage('Docker Build Test images') {
-            git 'https://github.com/jenkinsci/kubernetes-plugin.git'
+            git 'git@github.com:agdgpn/petclinic-microservices.git'
             container('docker') {
                 sh '''
                 ls
