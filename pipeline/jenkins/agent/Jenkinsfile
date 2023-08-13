@@ -3,6 +3,7 @@ pipeline {
         kubernetes {
             cloud 'dev-kube'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
+            serviceAccount 'jenkins-admin'
         }
     }
     stages {
