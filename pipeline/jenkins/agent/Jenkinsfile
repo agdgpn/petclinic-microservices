@@ -16,6 +16,7 @@ pipeline {
         steps {
             container('docker') {
                 sh '''
+                echo home: $PETCLINIC_HOME
                 sh scripts/devops/build_image.sh config local
                 '''
             }
