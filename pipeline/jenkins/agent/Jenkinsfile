@@ -17,7 +17,7 @@ pipeline {
         steps {
             container('docker') {
                 sh '''
-                sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh config local
                 '''
             }
         }
