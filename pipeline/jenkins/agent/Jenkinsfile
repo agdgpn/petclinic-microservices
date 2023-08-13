@@ -1,4 +1,11 @@
-
+pipeline {
+    agent {
+        kubernetes {
+            inheritFrom 'somelabel'
+        }
+    }
+}
+/*
 podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin', 
             yaml: readTrusted('pipeline/jenkins/agent/pod.yaml'),
             envVars: [
@@ -15,12 +22,10 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
             ]) {
     node {
     checkout scm 
-    /* .. snip .. */
     }
     node(POD_LABEL) {
 
         stage('Docker Build Test images') {
-           /* git 'git@github.com:agdgpn/petclinic-microservices.git'*/
             container('docker') {
                 sh '''
                 ls
@@ -37,3 +42,4 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
         }
     }
 }
+*/
