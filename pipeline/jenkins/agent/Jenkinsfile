@@ -4,6 +4,9 @@ pipeline {
             cloud 'dev-kube'
             inheritFrom 'somelabel'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
+            envVars: 
+                - envVar(key: 'PETCLINIC_HOME', value: '/home/jenkins/agent/workspace/petclinic')
+                - envVar(key: 'DOCKER_ID', value: 'agdgpn')
     
         }
     }
