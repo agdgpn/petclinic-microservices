@@ -4,8 +4,8 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/damien-gregoire/petclinic-microservices-config-devops
-          default-label: dev_pn
+          uri: https://github.com/agdgpn/petclinic-microservices-config
+          default-label: master
           # Positionner les variables d'environnement GIT_USER et GIT_PASS
           username: ${GIT_USER} # Nom utilisateur github
           password: ${GIT_PASS} # API Key genere sur GITHUB
