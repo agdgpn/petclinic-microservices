@@ -29,12 +29,12 @@ then
   for iApp in $apps
   do
     echo "Installation de l'application '$iApp'"
-    appPath=../../kubernetes/helm/$iApp
+    appPath="$PETCLINIC_HOME"/kubernetes/helm/$iApp
     cp $appPath/values.yaml values.yml
     helm upgrade --install $iApp $appPath --values=values.yml --namespace $namespace
   done
 else
-  appPath=../../kubernetes/helm/$app
+  appPath="$PETCLINIC_HOME"/kubernetes/helm/$app
   cp $appPath/values.yaml values.yml
   echo "Installation de l'application '$app'"
   helm upgrade --install $app $appPath --values=values.yml --namespace $namespace
