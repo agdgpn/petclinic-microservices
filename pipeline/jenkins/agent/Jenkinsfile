@@ -2,8 +2,18 @@ pipeline {
     agent {
         kubernetes {
             inheritFrom 'somelabel'
+            yamlFile 'pipeline/jenkins/agent/pod.yaml'
         }
     }
+
+  stages {
+    stage('Test') {
+      steps {
+        sh 'eho Hello word!'
+        sh 'ls'
+      }
+    }
+  }
 }
 /*
 podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin', 
