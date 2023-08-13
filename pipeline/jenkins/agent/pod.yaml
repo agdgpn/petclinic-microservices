@@ -6,11 +6,6 @@ spec:
     image: jenkins/inbound-agent:latest
   - name: kubectl
     image: amaceog/kubectl
-    env:
-    - name: PETCLINIC_HOME
-      value: "/var/lib/jenkins/workspace/petclinic"
-    - name: DOCKER_ID
-      value: "agdgpn"
     command:
     - cat
     tty: true
@@ -35,6 +30,11 @@ spec:
         cpu: "300m"
   - name: docker
     image: docker:1.11
+    env:
+    - name: PETCLINIC_HOME
+      value: "/var/lib/jenkins/workspace/petclinic"
+    - name: DOCKER_ID
+      value: "agdgpn"
     command:
     - cat
     tty: true
