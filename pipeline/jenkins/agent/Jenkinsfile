@@ -13,6 +13,14 @@ pipeline {
         sh 'ls'
       }
     }
+    stage('Docker Build Test images') {
+        container('docker') {
+            sh '''
+            sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+            '''
+        }
+    }
+    
   }
 }
 /*
