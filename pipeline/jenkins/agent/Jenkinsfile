@@ -14,17 +14,14 @@ pipeline {
       }
     }
     stage('Docker Build Test images') {
-        container('docker') {
-            sh '''
-            sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
-            '''
-        }
         steps {
-            sh 'echo Hello word!'
-            sh 'ls'
-      }
+            container('docker') {
+                sh '''
+                sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                '''
+            }
+        }
     }
-    
   }
 }
 /*
