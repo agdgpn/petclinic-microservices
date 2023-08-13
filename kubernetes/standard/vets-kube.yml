@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vets-service
+  labels:
+    app: vets-service
+  namespace: dev 
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vets-service
+  template:
+    metadata:
+      labels:
+        app: vets-service
+    spec:
+      containers:
+      - image: ndiayepi/vets-image 
+        name: vets-service
+        command: ["./run_container_app.sh"]
+        args: ["2", "docker,mysql"]
+        ports:
+          - containerPort: 8083
+        imagePullPolicy: Always 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vets-service
+  namespace: dev
+spec:
+  ports:
+  - port: 8083
+    protocol: TCP
+    targetPort: 8083
+  selector:
+    app: vets-service
+status:
+  loadBalancer: {}

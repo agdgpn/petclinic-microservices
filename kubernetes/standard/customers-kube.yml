@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-service
+  labels:
+    app: customers-service
+  namespace: dev 
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: customers-service
+  template:
+    metadata:
+      labels:
+        app: customers-service
+    spec:
+      containers:
+      - image: ndiayepi/customers-image 
+        name: customers-service
+        command: ["./run_container_app.sh"]
+        args: ["2", "docker,mysql"]
+        ports:
+          - containerPort: 8081
+        imagePullPolicy: Always 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: customers-service
+  namespace: dev  
+spec:
+  ports:
+  - port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: customers-service
+status:
+  loadBalancer: {}

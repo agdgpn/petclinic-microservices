@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  labels:
+    app: config-server
+  namespace: dev 
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: config-server
+  template:
+    metadata:
+      labels:
+        app: config-server
+    spec:
+      containers:
+      - image: ndiayepi/config-image 
+        name: config-server
+        ports:
+            - containerPort: 8888
+        env:
+          - name: GIT_USER
+            value: ndiayepi
+          - name: GIT_PASS
+            value: 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
+        imagePullPolicy: Always  
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+  namespace: dev
+spec:
+  ports:
+  - port: 8888
+    protocol: TCP
+    targetPort: 8888
+  selector:
+    app: config-server
+status:
+  loadBalancer: {}

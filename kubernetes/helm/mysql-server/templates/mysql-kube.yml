@@ -1,0 +1,53 @@
+apiVersion: v1
+data:
+  MYSQL_DATABASE: cGV0Y2xpbmlj
+  MYSQL_ROOT_PASSWORD: cGV0Y2xpbmlj
+kind: Secret
+metadata:
+  creationTimestamp: "2023-07-10T21:11:18Z"
+  name: mysql-secret-data
+  resourceVersion: "75909"
+  uid: 3412ae4b-a31a-42de-b86b-c1e23feb4aea
+type: Opaque
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-server
+  labels:
+    app: mysql-server
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: mysql-server
+  template:
+    metadata:
+      labels:
+        app: mysql-server
+    spec:
+      #volumes:
+      #- name: mysql-persistent-storage
+      #  persistentVolumeClaim:
+      #    claimName: mysql-pv-claim
+      containers:
+      - name: mysql-server
+        image: mysql:5.7.8
+        ports:
+        - containerPort: 3306
+          name: mysql-server
+        #env:
+        # - name: MYSQL_ROOT_PASSWORD
+        #   value: "petclinic"
+        # - name: MYSQL_DATABASE
+        #   value: "petclinic"
+        envFrom:
+          - secretRef:
+              name: mysql-secret-data
+        #volumeMounts:
+        # - mountPath: "/var/lib/mysql"
+        #  name: mysql-persistent-storage
+
+

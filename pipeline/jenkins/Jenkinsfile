@@ -1,0 +1,341 @@
+pipeline {
+    environment { // Variables d environnement
+        PETCLINIC_HOME           = "/var/lib/jenkins/workspace/petclinic"      // Racine projet petclinic
+        DOCKER_ID                = "agdgpn"                 // Identifiant docker hub
+        CONFIG_DOCKER_IMAGE      = "config"    // Image Config-server
+        DISCOVERY_DOCKER_IMAGE   = "discovery" // Image Discover-server
+        CUSTOMERS_DOCKER_IMAGE   = "customers" // Image Customers-service
+        VETS_DOCKER_IMAGE        = "vets" // Image Vets-service
+        VISITS_DOCKER_IMAGE      = "visits" // Image Visits-service
+        ADMIN_DOCKER_IMAGE       = "admin" // Image Admin-server
+        APIGATEWAY_DOCKER_IMAGE = "api-gateway" // Image Api-gateway
+        DOCKER_TAG = "v.${BUILD_ID}.0" // Tag docker pour les images correspondant au build courant, incrémenté à chaque nouveau build
+    }
+    
+    // Executé par n'importe quel agent 
+    agent any
+    
+    stages {
+        // Etape de génération des images de tests
+        stage('Docker Build Test images'){ 
+            steps {
+                script {
+                sh '''
+                 ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $VETS_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE local
+                 ./scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE local
+                 
+                '''
+                }
+            }
+        }
+
+        // Etape Execution Docker Pour tests
+        stage('Execution Docker'){ // Test des image avant de les pousser vers le registre Docker Hub 
+          
+            steps {
+                script {
+                    sh '''
+                    cd $PETCLINIC_HOME 
+                    ./scripts/devops/remove_container_if_exists.sh config-server
+                    ./scripts/devops/remove_container_if_exists.sh discovery-server
+                    ./scripts/devops/remove_container_if_exists.sh customers-service
+                    ./scripts/devops/remove_container_if_exists.sh vets-service
+                    ./scripts/devops/remove_container_if_exists.sh visits-service
+                    ./scripts/devops/remove_container_if_exists.sh admin-server
+                    ./scripts/devops/remove_container_if_exists.sh api-gateway
+                    
+                    NETWORK_NAME=petclinic_network
+                    if [ -z $(docker network ls --filter name=^${NETWORK_NAME}$ --format="{{ .Name }}") ] ; then 
+                        docker network create --subnet 172.50.0.0/24 --gateway 172.50.0.1 ${NETWORK_NAME} ; 
+                    fi
+                    docker-compose -f docker/devops/docker-compose.yml up -d
+                    '''
+                }
+            }
+        }
+        // Heathy check pour tester le bon fonctionnement des applications.
+        stage('Apps healthy check test'){ 
+            steps {
+                    script {
+                    sh '''                    
+                    
+                    # Tester toutes les 5 secondes la dispo de l'url.
+                    timeout 120s bash -c 'until curl -X HEAD -I  http://localhost:8888; do sleep 5; done'
+                    timeout 120s bash -c 'until curl -X HEAD -I  http://localhost:8761; do sleep 5; done'
+                    timeout 120s bash -c 'until curl -X HEAD -I  http://localhost:8081; do sleep 5; done'
+                    timeout 120s bash -c 'until curl -X HEAD -I  http://localhost:8080; do sleep 5; done'                                        
+                    
+                    # Arreter les container utilisés pour les tests.
+                    docker-compose -f docker/devops/docker-compose.yml stop
+                    '''
+                    }
+            }
+
+        }
+        // Etape de génération des images a deployer en dev/prod
+        stage('Docker Build images'){ 
+            steps {
+                script {
+                sh '''
+                 ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $VETS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 ./scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                 
+                '''
+                }
+            }
+        }
+        // Envoi des images générée à l'étape précédente sur le registre Dockerhub
+        stage('Docker Push'){ 
+            environment
+            {
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS") // Récupéraion du mot de passe Dockerhub depuis le secret "docker_hub_pass' enrgistré sur jenkins
+            }
+            steps {
+
+                script {
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$VETS_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$VISITS_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
+                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
+                }
+            }
+
+        }
+
+        // Déploiement sur l'environnement de DEV.
+        stage('Deploiement en dev'){
+            environment
+            {
+                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+            }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config                   
+                '''
+                try {
+                    sh '''
+                    # Mysql deployment if its not already deployed
+                    var=$(kubectl get po mysql-server-0 -n dev)
+                    
+                    '''
+                } catch (err) {
+                    echo "Message: ${err}"
+                    echo "mysql-server already deployed "
+                    sh '''
+                    cp kubernetes/helm/mysql-server/values.yaml values.yml
+                    helm upgrade --install mysql-server kubernetes/helm/mysql-server --values=values.yml --create-namespace --namespace dev 
+                    '''
+                }
+                sh '''
+                # Config Server deployment
+                cp kubernetes/helm/config-server/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                
+                helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace dev
+                   
+                # Discovery Server deployment
+                cp kubernetes/helm/discovery-server/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                
+                helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace dev
+                
+                # Test base de donnee Mysql
+                #ip=$(kubectl get service/mysql-server -o jsonpath='{.spec.clusterIP}' -n dev)
+                #sed -i "s+host = .*+host = $ip+g" scripts/devops/db-tools/my.cnf
+                #./scripts/devops/db-tools/connect2db.sh 
+                #exit
+
+                # Customers Service deployment
+                cp kubernetes/helm/customers-service/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                
+                helm upgrade --install customers-service kubernetes/helm/customers-service --values=values.yml --create-namespace --namespace dev
+
+                # Vets Service deployment
+                cp kubernetes/helm/vets-service/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                
+                helm upgrade --install vets-service kubernetes/helm/vets-service --values=values.yml --create-namespace --namespace dev
+
+                # Visits Service deployment
+                cp kubernetes/helm/visits-service/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                #cat values.yml
+                helm upgrade --install visits-service kubernetes/helm/visits-service --values=values.yml --create-namespace --namespace dev
+
+                # Admin Server deployment
+                cp kubernetes/helm/admin-server/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                #cat values.yml
+                helm upgrade --install admin-server kubernetes/helm/admin-server --values=values.yml --create-namespace --namespace dev
+
+                # Api-gateway deployment
+                # Mise a jout namespace dans middleware.yml en dev
+                sed -i "s+namespace.*+namespace: traefik+g" kubernetes/standard/middleware.yml
+                kubectl apply -f kubernetes/standard/middleware.yml
+                cp kubernetes/helm/api-gateway/values.yaml values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                sed -i "s+.*secretName.*+    - secretName: dev-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                sed -i "s+.*host: .*+  - host: dev.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - dev.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: traefik-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace dev
+                '''
+                }
+            }
+
+        }
+        
+        stage('Test accessibilité API GATEWAY en DEV'){
+            environment
+            {
+                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+            }
+            steps {
+
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config  
+                    # Suppression des pods en failed:
+                    kubectl delete pods --all-namespaces --field-selector=status.phase=Failed
+                    # Supprimer les replicaset avec desired state 0:
+                    kubectl -n dev delete rs $(kubectl -n dev get rs | awk '{if ($2 + $3 + $4 == 0) print $1}' | grep -v 'NAME')
+                    sleep 20 # Attendre 20 secondes apres le redeploiement le temps que la version actuelle soit dispo
+                    ./scripts/devops/test_accessibilite.sh https://dev.petclinic-datascientest.cloudns.ph
+
+                    '''
+                }
+            }
+        }
+        // Déploiement sur l'environnement de PROD
+        stage('Deploiement en prod'){
+            environment
+            {
+                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+            }
+            steps {
+                    // Génération d'un bouton avec un timout de 15 mn pour
+                    // confirmer manuellement le déploiement en prod
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: 'Voulez-vous déployer en prod ?', ok: 'Oui'
+                }
+
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    # Copie de la config k3s 
+                    cat $KUBECONFIG > .kube/config                   
+                    '''
+                    try {
+                        sh '''
+                        # Mysql deployment if its not already deployed
+                        var=$(kubectl get po mysql-server-0 -n prod)
+                        
+                        '''
+                    } catch (err) {
+                        echo "Message: ${err}"
+                        echo "mysql-server already deployed "
+                        sh '''
+                        cp kubernetes/helm/mysql-server/values.yaml values.yml
+                        helm upgrade --install mysql-server kubernetes/helm/mysql-server --values=values.yml --create-namespace --namespace prod 
+                        '''
+                    }                     
+                    sh '''
+                    # Config Server deployment
+                    cp kubernetes/helm/config-server/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    #cat values.yml
+                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace prod
+                    
+                    # Discovery Server deployment
+                    cp kubernetes/helm/discovery-server/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace prod
+                    
+                    # Customers Service deployment
+                    cp kubernetes/helm/customers-service/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install customers-service kubernetes/helm/customers-service --values=values.yml --create-namespace --namespace prod
+
+                    # Vets Service deployment
+                    cp kubernetes/helm/vets-service/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install vets-service kubernetes/helm/vets-service --values=values.yml --create-namespace --namespace prod
+
+                    # Visits Service deployment
+                    cp kubernetes/helm/visits-service/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                   
+                    helm upgrade --install visits-service kubernetes/helm/visits-service --values=values.yml --create-namespace --namespace prod
+
+                    # Admin Server deployment
+                    cp kubernetes/helm/admin-server/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install admin-server kubernetes/helm/admin-server --values=values.yml --create-namespace --namespace prod
+
+                    # Api-gateway deployment
+                    # Mise a jout namespace dans middleware.yml en dev
+                    sed -i "s+namespace.*+namespace: kube-system+g" kubernetes/standard/middleware.yml
+                    kubectl apply -f kubernetes/standard/middleware.yml
+                    cp kubernetes/helm/api-gateway/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    sed -i "s+.*secretName.*+    - secretName: prod-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+.*host: .*+  - host: prod.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+.*dev.petclinic-datascientest.cloudns.ph+        - prod.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: kube-system-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace prod
+                    '''
+                }
+            }
+        }
+        
+        stage('Test accessibilité API GATEWAY en PROD'){
+            environment
+            {
+                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+            }
+            steps {
+
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config  
+                    # Suppression des pods en failed:
+                    kubectl delete pods --all-namespaces --field-selector=status.phase=Failed
+                    # Supprimer les replicaset avec desired state 0:
+                    kubectl -n prod delete rs $(kubectl -n prod get rs | awk '{if ($2 + $3 + $4 == 0) print $1}' | grep -v 'NAME')
+                    sleep 20
+                    ./scripts/devops/test_accessibilite.sh https://prod.petclinic-datascientest.cloudns.ph
+                    '''
+                }
+            }
+        }
+    }
+}

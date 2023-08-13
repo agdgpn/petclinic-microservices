@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-server
+  labels:
+    app: admin-server
+  namespace: dev 
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: admin-server
+  template:
+    metadata:
+      labels:
+        app: admin-server
+    spec:
+      containers:
+      - image: ndiayepi/admin-image 
+        name: admin-server
+        command: ["./run_container_app.sh"]
+        args: ["2", "docker"]
+        ports:
+          - containerPort: 9090
+        imagePullPolicy: Always 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-server
+  namespace: dev
+spec:
+  type: NodePort
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+    nodePort: 30001
+  selector:
+    app: admin-server
+status:
+  loadBalancer: {}

@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: services-strip
+  namespace: traefik
+spec:
+  stripPrefix:
+    prefixes:
+      - /api/customer
+      - /api/vet
+      - /api/visit
+      - /api/gateway

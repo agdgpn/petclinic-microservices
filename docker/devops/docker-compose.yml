@@ -1,0 +1,83 @@
+version: '2'
+
+services:
+  mysql-server:
+    image: mysql:5.7.8
+    container_name: mysql-server
+    networks:
+     - petclinic_network
+    expose:
+     - 3306
+    ports:
+     - 3306:3306
+    environment:
+     - MYSQL_ROOT_PASSWORD=petclinic
+     - MYSQL_DATABASE=petclinic
+  config-server:
+    image: config-image
+    container_name: config-server
+    volumes:
+     - /tmp:/root
+    networks:
+     - petclinic_network
+    expose:
+     - 8888
+    ports:
+     - 8888:8888
+    environment:
+     - GIT_USER=ndiayepi
+     - GIT_PASS=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
+  discovery-server:
+    image: discovery-image
+    container_name: discovery-server
+    volumes:
+     - /tmp:/root
+    command: 
+     - '20'
+     - docker
+    networks:
+     - petclinic_network
+    depends_on:
+     - config-server
+    expose:
+     - 8761
+    ports:
+     - 8761:8761
+  customer-service:
+    image: customers-image
+    container_name: customer-service
+    volumes:
+     - /tmp:/root
+    command: 
+     - '30'
+     - docker,mysql
+    networks:
+     - petclinic_network
+    depends_on:
+     - config-server
+     - discovery-server
+    expose:
+     - 8081
+    ports:
+     - 8081:8081
+
+  api-gateway:
+    image: api-gateway-image
+    container_name: api-gateway
+    volumes:
+     - /tmp:/root
+    command: 
+     - '60'
+     - docker
+    networks:
+     - petclinic_network
+    depends_on:
+     - config-server
+     - discovery-server
+    expose:
+     - 8080
+    ports:
+     - 8080:8080
+networks:
+  petclinic_network:
+    external: true

@@ -1,0 +1,24 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  mapRoles: |
+    - groups:
+      - system:bootstrappers
+      - system:nodes
+      rolearn: arn:aws:iam::424571028400:role/petclinic-eks-node-group
+      username: system:node:{{EC2PrivateDNSName}} 
+  mapUsers: |
+   - userarn: arn:aws:iam::866336676947:user/admin-eks
+     username: admin-eks
+     groups:
+     - system:bootstrappers
+     - system:masters
+   
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+ 
