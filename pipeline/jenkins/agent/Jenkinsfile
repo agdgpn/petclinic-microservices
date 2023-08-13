@@ -7,6 +7,10 @@ pipeline {
     }
     stages {
         stage('Test') {
+            
+        when {
+               changeset "**/*.py"
+        }
         steps {
             sh 'echo Hello word! Last build is $BUILD_ID'
             sh 'pwd'
