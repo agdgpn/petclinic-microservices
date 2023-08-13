@@ -9,7 +9,7 @@ pipeline {
         stage('Test') {
         steps {
             sh 'echo Hello word!'
-            sh 'ls docker/devops'
+            sh 'pwd'
         }
     }
     stage('Docker Build Test images') {
