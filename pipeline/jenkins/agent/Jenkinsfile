@@ -13,10 +13,14 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
                 envVar(key: 'APIGATEWAY_DOCKER_IMAGE', value: 'api-gateway'),
                 envVar(key: 'DOCKER_TAG', value: 'v.${BUILD_ID}.0')
             ]) {
+    node {
+    checkout scm 
+    /* .. snip .. */
+    }
     node(POD_LABEL) {
 
         stage('Docker Build Test images') {
-            git 'git@github.com:agdgpn/petclinic-microservices.git'
+           /* git 'git@github.com:agdgpn/petclinic-microservices.git'*/
             container('docker') {
                 sh '''
                 ls
