@@ -4,7 +4,7 @@ pipeline {
             cloud 'dev-kube'
             inheritFrom 'somelabel'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
-            PETCLINIC_HOME "/var/lib/jenkins/workspace/petclinic"
+            envVar PETCLINIC_HOME "/var/lib/jenkins/workspace/petclinic"
         }
     }
 
