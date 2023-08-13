@@ -15,20 +15,16 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
             ]) {
     node(POD_LABEL) {
         stage('Docker Build Test images') {
-            container('docker') { 
-                steps {
-                    script {
-                        sh '''
-                        sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE local
-                        sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE local
-                        '''
-                    }
-                }
+            container('docker') {
+                sh '''
+                sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE local
+                sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE local
+                '''   
             }
         }
     }
