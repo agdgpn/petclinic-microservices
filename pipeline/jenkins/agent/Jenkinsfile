@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Test') {
         steps {
-            sh 'echo Hello word!'
+            sh 'echo Hello word! Last build is $BUILD_ID'
             sh 'pwd'
         }
     }
