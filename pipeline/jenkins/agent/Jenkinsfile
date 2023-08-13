@@ -81,7 +81,7 @@ pipeline {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('kubectl') {   
-                step{
+                node {
                     try {
                     sh '''
                     kubectl get namespace testing
