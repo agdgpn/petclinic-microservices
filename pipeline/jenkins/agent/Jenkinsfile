@@ -9,7 +9,7 @@ pipeline {
         stage('Test') {
             
         when {
-               changeset "pipeline/**"
+               changeset "spring-petclinic-config-server/.."
         }
         steps {
             sh 'echo Hello word! Last build is $BUILD_ID'
