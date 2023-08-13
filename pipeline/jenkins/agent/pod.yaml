@@ -6,6 +6,11 @@ spec:
     image: jenkins/inbound-agent:latest
   - name: kubectl
     image: amaceog/kubectl
+    env:
+    - PETCLINIC_HOME: DEMO_GREETING
+      value: "/var/lib/jenkins/workspace/petclinic"
+    - name: DOCKER_ID
+      value: "agdgpn"
     command:
     - cat
     tty: true

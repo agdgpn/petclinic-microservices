@@ -7,19 +7,6 @@ pipeline {
             envVar "PETCLINIC_HOME = /var/lib/jenkins/workspace/petclinic"
         }
     }
-
-    environment { // Variables d environnement
-        PETCLINIC_HOME           = "/var/lib/jenkins/workspace/petclinic"      // Racine projet petclinic
-        DOCKER_ID                = "agdgpn"                 // Identifiant docker hub
-        CONFIG_DOCKER_IMAGE      = "config"    // Image Config-server
-        DISCOVERY_DOCKER_IMAGE   = "discovery" // Image Discover-server
-        CUSTOMERS_DOCKER_IMAGE   = "customers" // Image Customers-service
-        VETS_DOCKER_IMAGE        = "vets" // Image Vets-service
-        VISITS_DOCKER_IMAGE      = "visits" // Image Visits-service
-        ADMIN_DOCKER_IMAGE       = "admin" // Image Admin-server
-        APIGATEWAY_DOCKER_IMAGE = "api-gateway" // Image Api-gateway
-        DOCKER_TAG = "v.${BUILD_ID}.0" // Tag docker pour les images correspondant au build courant, incrémenté à chaque nouveau build
-    }
     stages {
         stage('Test') {
         steps {
