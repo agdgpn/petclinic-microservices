@@ -7,7 +7,7 @@ spec:
   - name: kubectl
     image: amaceog/kubectl
     env:
-    - PETCLINIC_HOME: DEMO_GREETING
+    - name: PETCLINIC_HOME
       value: "/var/lib/jenkins/workspace/petclinic"
     - name: DOCKER_ID
       value: "agdgpn"
