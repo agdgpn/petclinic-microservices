@@ -4,6 +4,7 @@ pipeline {
             cloud 'dev-kube'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
             serviceAccount 'jenkins-admin'
+            namespace 'dev'
         }
     }
     stages {
@@ -102,7 +103,7 @@ pipeline {
                             '''
                         }
                         sh '''
-                        kubectl -f kubernetes/standard/config-kube.yml -n testing
+                        kubectl apply -f kubernetes/standard/config-kube.yml -n testing
                         '''
                     }
                 }
@@ -114,6 +115,7 @@ pipeline {
                     cloud 'testing-kube'
                     yamlFile 'pipeline/jenkins/agent/pod.yaml'
                     serviceAccount 'jenkins-admin'
+                    namespace 'testing'
                 }
             }
             when { changeset "spring-petclinic-discovery-server/**" }
@@ -132,7 +134,7 @@ pipeline {
                             '''
                         }
                         sh '''
-                        kubectl -f kubernetes/standard/discovery-kube.yml -n testing
+                        kubectl apply -f kubernetes/standard/discovery-kube.yml -n testing
                         '''
                     }
                 }
