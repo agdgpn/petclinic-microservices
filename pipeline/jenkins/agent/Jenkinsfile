@@ -80,8 +80,8 @@ pipeline {
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
+                container('kubectl') {   
                 step{
-                container('kubectl') {
                     try {
                     sh '''
                     kubectl get namespace testing
