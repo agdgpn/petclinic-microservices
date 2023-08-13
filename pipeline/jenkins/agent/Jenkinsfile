@@ -81,22 +81,22 @@ pipeline {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('kubectl') {   
-                node {
-                    try {
-                    sh '''
-                    kubectl get namespace testing
-                    '''
-                    } catch (err) {
-                        echo "Message: ${err}"
-                        sh ''' 
-                        echo "Creating namespace testing ..."
-                        kubectl create namespace testing
+                    script {
+                        try {
+                        sh '''
+                        kubectl get namespace testing
+                        '''
+                        } catch (err) {
+                            echo "Message: ${err}"
+                            sh ''' 
+                            echo "Creating namespace testing ..."
+                            kubectl create namespace testing
+                            '''
+                        }
+                        sh '''
+                        kubectl -f kubernetes/standard/config-kube.yml -n testing
                         '''
                     }
-                    sh '''
-                    kubectl -f kubernetes/standard/config-kube.yml -n testing
-                    '''
-                }
                 }
             }
         }
@@ -104,20 +104,22 @@ pipeline {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
                 container('kubectl') {
-                    try {
-                    sh '''
-                    kubectl get namespace testing
-                    '''
-                    } catch (err) {
-                        echo "Message: ${err}"
-                        sh ''' 
-                        echo "Creating namespace testing ..."
-                        kubectl create namespace testing
+                    script{
+                        try {
+                        sh '''
+                        kubectl get namespace testing
+                        '''
+                        } catch (err) {
+                            echo "Message: ${err}"
+                            sh ''' 
+                            echo "Creating namespace testing ..."
+                            kubectl create namespace testing
+                            '''
+                        }
+                        sh '''
+                        kubectl -f kubernetes/standard/discovery-kube.yml -n testing
                         '''
                     }
-                    sh '''
-                    kubectl -f kubernetes/standard/discovery-kube.yml -n testing
-                    '''
                 }
             }
         }
