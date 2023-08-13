@@ -29,7 +29,7 @@ spec:
         memory: "500Mi"
         cpu: "300m"
   - name: docker
-    image: docker:1.11
+    image: docker
     env:
     - name: PETCLINIC_HOME
       value: "/var/lib/jenkins/workspace/petclinic"
