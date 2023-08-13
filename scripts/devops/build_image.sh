@@ -75,8 +75,8 @@ else
       docker build / -t $docker_id/$app-image:$tag --build-arg BASE_DIR=$PETCLINIC_HOME \
       --build-arg APP=$app_full_name -f $dock_path/generic-dockerfile
   else
-      docker build $dock_path -t $app-image:$tag --build-arg BASE_DIR=$PETCLINIC_HOME \
-      --build-arg APP=$app_full_name -f generic-dockerfile
+      docker build / -t $app-image:$tag --build-arg BASE_DIR=$PETCLINIC_HOME \
+      --build-arg APP=$app_full_name -f $dock_path/generic-dockerfile
   fi
 
 fi
