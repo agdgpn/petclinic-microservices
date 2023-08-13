@@ -14,7 +14,9 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
                 envVar(key: 'DOCKER_TAG', value: 'v.${BUILD_ID}.0')
             ]) {
     node(POD_LABEL) {
+
         stage('Docker Build Test images') {
+            git 'https://github.com/jenkinsci/kubernetes-plugin.git'
             container('docker') {
                 sh '''
                 ls
