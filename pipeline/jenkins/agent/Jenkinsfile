@@ -2,7 +2,6 @@ pipeline {
     agent {
         kubernetes {
             cloud 'dev-kube'
-            inheritFrom 'somelabel'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
         }
     }
