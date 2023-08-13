@@ -18,6 +18,7 @@ podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin',
             container('docker') {
                 sh '''
                 ls
+                pwd
                 sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
                 sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
                 sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
