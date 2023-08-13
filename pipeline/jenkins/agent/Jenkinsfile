@@ -77,43 +77,48 @@ pipeline {
                 }
             }
         }
-    }
-}
-/*
-podTemplate(cloud: 'dev-kube', serviceAccount: 'jenkins-admin', 
-            yaml: readTrusted('pipeline/jenkins/agent/pod.yaml'),
-            envVars: [
-                envVar(key: 'PETCLINIC_HOME', value: '/home/jenkins/agent/workspace/petclinic'),
-                envVar(key: 'DOCKER_ID', value: 'agdgpn'),
-                envVar(key: 'CONFIG_DOCKER_IMAGE', value: 'config'),
-                envVar(key: 'DISCOVERY_DOCKER_IMAGE', value: 'discovery'),
-                envVar(key: 'CUSTOMERS_DOCKER_IMAGE', value: 'customers'),
-                envVar(key: 'VETS_DOCKER_IMAGE', value: 'vets'),
-                envVar(key: 'VISITS_DOCKER_IMAGE', value: 'visits'),
-                envVar(key: 'ADMIN_DOCKER_IMAGE', value: 'admin'),
-                envVar(key: 'APIGATEWAY_DOCKER_IMAGE', value: 'api-gateway'),
-                envVar(key: 'DOCKER_TAG', value: 'v.${BUILD_ID}.0')
-            ]) {
-    node {
-    checkout scm 
-    }
-    node(POD_LABEL) {
+        stage('Deploy Config in Testing') {
+            when { changeset "spring-petclinic-config-server/**" }
+            steps {
 
-        stage('Docker Build Test images') {
-            container('docker') {
-                sh '''
-                ls
-                pwd
-                sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE local
-                sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE local
-                '''   
+                container('kubectl') {
+                    try {
+                    sh '''
+                    kubectl get namespace testing
+                    '''
+                    } catch (err) {
+                        echo "Message: ${err}"
+                        sh ''' 
+                        echo "Creating namespace testing ..."
+                        kubectl create namespace testing
+                        '''
+                    }
+                    sh '''
+                    kubectl -f kubernetes/standard/config-kube.yml -n testing
+                    '''
+                }
+            }
+        }
+        stage('Deploy  Discovery in Testing') {
+            when { changeset "spring-petclinic-discovery-server/**" }
+            steps {
+                container('kubectl') {
+                    try {
+                    sh '''
+                    kubectl get namespace testing
+                    '''
+                    } catch (err) {
+                        echo "Message: ${err}"
+                        sh ''' 
+                        echo "Creating namespace testing ..."
+                        kubectl create namespace testing
+                        '''
+                    }
+                    sh '''
+                    kubectl -f kubernetes/standard/discovery-kube.yml -n testing
+                    '''
+                }
             }
         }
     }
 }
-*/
