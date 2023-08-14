@@ -10,7 +10,7 @@ pipeline {
             cloud 'testing-kube'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
             serviceAccount 'jenkins-admin'
-            namespace "$NS"
+            namespace "testing"
         }
     }
     stages {
