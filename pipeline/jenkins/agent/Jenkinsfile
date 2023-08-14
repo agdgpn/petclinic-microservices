@@ -157,7 +157,7 @@ pipeline {
                     # Discovery Server deployment
                     cp kubernetes/helm/discovery-server/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install config-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
+                    helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
             }
