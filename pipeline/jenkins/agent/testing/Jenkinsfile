@@ -285,11 +285,10 @@ pipeline {
         }
         stage('Api-gateway accessibility test in Testing') {
             steps {
-                container('helm') { 
                     sh '''
-                    sh scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    sleep 20
+                    sh scripts/devops/test_accessibilite.sh http://pn-macos-vb-ubuntu/
                     '''
-                }
             }
         }
     }
