@@ -147,5 +147,27 @@ pipeline {
                 }
             }
         }
+
+
+        
+        stage('Clean up in Testing environment') {
+            environment
+            {
+                NS = 'testing'
+            }
+            steps {
+                container('helm') { 
+                    sh '''
+                    # Suppression des pods en failed:
+                    kubectl delete pods -n $NS --field-selector=status.phase=Failed
+                    # Supprimer les replicaset avec desired state 0:
+                    kubectl -n $NS delete rs $(kubectl -n $NS get rs | awk '{if ($2 + $3 + $4 == 0) print $1}' | grep -v 'NAME')
+                    '''
+                }
+            }
+        }
     }
 }
+
+ 
+                   
