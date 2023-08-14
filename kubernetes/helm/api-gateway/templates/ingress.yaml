@@ -8,13 +8,13 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: traefik-services-strip@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: traefik
-  tls:
-    - secretName: dev-secret
-      hosts:
-        - prod.petclinic-datascientest.cloudns.ph
+  #ingressClassName: traefik
+  #tls:
+  #  - secretName: dev-secret
+  #    hosts:
+  #      - prod.petclinic-datascientest.cloudns.ph
   rules:
-  - host: prod.petclinic-datascientest.cloudns.ph
+  #- host: prod.petclinic-datascientest.cloudns.ph
     http:
       paths: 
         - path: /
