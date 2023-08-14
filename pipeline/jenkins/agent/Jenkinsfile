@@ -13,7 +13,7 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                    sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -23,7 +23,8 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -74,6 +75,30 @@ pipeline {
                 container('docker') {
                     sh '''
                     sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE local
+                    '''
+                }
+            }
+        }
+        
+        stage('Push Config Test') {
+            when { changeset "spring-petclinic-config-server/**" }
+            steps {
+                container('docker') {
+                    sh '''
+                    docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
+                    #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    '''
+                }
+            }
+        }
+        stage('Push Discovery Test') {
+            when { changeset "spring-petclinic-discovery-server/**" }
+            steps {
+                container('docker') {
+                    sh '''
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
                     '''
                 }
             }
