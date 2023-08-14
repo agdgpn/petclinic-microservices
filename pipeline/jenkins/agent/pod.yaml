@@ -10,13 +10,6 @@ spec:
     command:
     - cat
     tty: true
-    resources:
-      requests:
-        memory: "300Mi"
-        cpu: "100m"
-      limits:
-        memory: "500Mi"
-        cpu: "300m"
   - name: helm
     image: alpine/helm:3.11.1
     command:
