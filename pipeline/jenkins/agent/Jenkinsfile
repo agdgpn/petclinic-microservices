@@ -130,6 +130,7 @@ pipeline {
             environment
             {
                 DOCKER_TAG = "v.${BUILD_ID}.0"
+                NS = 'testing'
             }
             steps {
                 container('helm') { 
@@ -138,32 +139,27 @@ pipeline {
                     cp kubernetes/helm/config-server/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     
-                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace dev
+                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
             }
         }
         stage('Deploy  Discovery in Testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
+            environment
+            {
+                DOCKER_TAG = "v.${BUILD_ID}.0"
+                NS = 'testing'
+            }
             steps {
-                container('kubectl') {
-                    script{
-                        try {
-                        sh '''
-                        kubectl get namespace testing
-                        '''
-                        } catch (err) {
-                            echo "Message: ${err}"
-                            sh ''' 
-                            echo "Creating namespace testing ..."
-                            kubectl create namespace testing
-                            '''
-                        }
-                        sh '''
-                        sed -i "s+namespace:.*+namespace: testing+g" kubernetes/standard/discovery-kube.yml
-                        kubectl apply -f kubernetes/standard/discovery-kube.yml -n testing
-                        '''
-                    }
+                container('helm') { 
+                    sh '''
+                    # Config Server deployment
+                    cp kubernetes/helm/config-server/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install config-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
+                    '''
                 }
             }
         }
