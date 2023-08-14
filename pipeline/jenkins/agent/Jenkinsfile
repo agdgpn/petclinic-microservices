@@ -59,6 +59,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Build Admin Test') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
@@ -79,7 +80,7 @@ pipeline {
                 }
             }
         }
-        
+        /*
         stage('Push Config Test') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
@@ -103,8 +104,13 @@ pipeline {
                 }
             }
         }
+        */
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
+            environment
+            {
+                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+            }
             steps {
                 container('jnlp') { 
                     sh '''
@@ -114,6 +120,10 @@ pipeline {
                 }
                 container('kubectl') { 
                     sh '''
+                    cat $KUBECONFIG
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
                     kubectl apply -f kubernetes/standard/config-kube.yml -n testing
                     '''
                 }
