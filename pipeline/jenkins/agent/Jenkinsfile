@@ -1,10 +1,10 @@
-pipeline {
+pipeline {                 
     agent {
         kubernetes {
-            cloud 'dev-kube'
+            cloud 'testing-kube'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
             serviceAccount 'jenkins-admin'
-            namespace 'dev'
+            namespace 'testing'
         }
     }
     stages {
@@ -78,15 +78,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy Config in Testing') {                    
-            agent {
-                kubernetes {
-                    cloud 'testing-kube'
-                    yamlFile 'pipeline/jenkins/agent/pod.yaml'
-                    serviceAccount 'jenkins-admin'
-                    namespace 'testing'
-                }
-            }
+        stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('jnlp') { 
@@ -102,15 +94,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Discovery in Testing') {                    
-            agent {
-                kubernetes {
-                    cloud 'testing-kube'
-                    yamlFile 'pipeline/jenkins/agent/pod.yaml'
-                    serviceAccount 'jenkins-admin'
-                    namespace 'testing'
-                }
-            }
+        stage('Deploy  Discovery in Testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
                 container('kubectl') {
