@@ -1,3 +1,6 @@
+/*
+* PIPELINE TESTING : rataché à la branche dev (développement)
+*/
 pipeline { 
     environment
     {
@@ -273,7 +276,8 @@ pipeline {
                     # Visits Service deployment
                     cp kubernetes/helm/api-gateway/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
-                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml                 
+                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
+                    cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
                     helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
