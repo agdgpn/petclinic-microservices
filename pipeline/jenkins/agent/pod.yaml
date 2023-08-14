@@ -6,7 +6,7 @@ spec:
     image: jenkins/inbound-agent:latest
   - name: kubectl
     #image: amaceog/kubectl
-    image: bitnami/kubectl
+    image: d3fk/kubectl
     command:
     - cat
     tty: true
