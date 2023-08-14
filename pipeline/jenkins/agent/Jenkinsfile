@@ -113,7 +113,7 @@ pipeline {
             }
         }
         stage('Push Customers Test') {
-            when { changeset "spring-petclinic-discovery-server/**" }
+            when { changeset "spring-petclinic-customers-service/**" }
             steps {
                 container('docker') {
                     sh '''
@@ -180,6 +180,23 @@ pipeline {
                     cp kubernetes/helm/discovery-server/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
+                    '''
+                }
+            }
+        }
+        stage('Deploy  Customers in Testing') {
+            when { changeset "spring-petclinic-customers-service/**" }
+            environment
+            {
+                NS = 'testing'
+            }
+            steps {
+                container('helm') { 
+                    sh '''
+                    # Customers Service deployment
+                    cp kubernetes/helm/customers-service/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                    helm upgrade --install customers-service kubernetes/helm/customers-service --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
             }
