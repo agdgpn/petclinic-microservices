@@ -89,10 +89,14 @@ pipeline {
             }
             when { changeset "spring-petclinic-config-server/**" }
             steps {
-                container('kubectl') { 
+                container('jnlp') { 
                     sh '''
                     sed -i "s+namespace:.*+namespace: testing+g" kubernetes/standard/config-kube.yml
                     cat kubernetes/standard/config-kube.yml
+                    '''
+                }
+                container('kubectl') { 
+                    sh '''
                     kubectl apply -f kubernetes/standard/config-kube.yml -n testing
                     '''
                 }
