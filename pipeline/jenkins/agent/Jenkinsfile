@@ -94,6 +94,7 @@ pipeline {
             environment
             {
                 DOCKER_TAG = "v.${BUILD_ID}.0" 
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS") // Récupéraion du mot de passe Dockerhub depuis le secret "docker_hub_pass' enrgistré sur jenkins
             }
             steps {
                 container('docker') {
@@ -109,6 +110,7 @@ pipeline {
             environment
             {
                 DOCKER_TAG = "v.${BUILD_ID}.0" 
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS") // Récupéraion du mot de passe Dockerhub depuis le secret "docker_hub_pass' enrgistré sur jenkins
             }
             steps {
                 container('docker') {
