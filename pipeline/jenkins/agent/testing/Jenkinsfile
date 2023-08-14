@@ -4,7 +4,6 @@
 pipeline { 
     environment
     {
-        PETCLINIC_HOME           = "/var/lib/jenkins/workspace/petclinic" // Racine projet petclinic
         DOCKER_TAG = "testing-v.${BUILD_ID}.0"                            // Tag build images
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
