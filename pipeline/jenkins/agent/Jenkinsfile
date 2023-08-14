@@ -13,8 +13,8 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
-                    #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
+                    sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -24,8 +24,8 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -117,22 +117,16 @@ pipeline {
             when { changeset "spring-petclinic-config-server/**" }
             environment
             {
-                KUBECONFIG = credentials("config") // Récupéraion du fichier secret appelé 'config' et enrgistré sur jenkins.
+                DOCKER_TAG = "v.${BUILD_ID}.0"
             }
             steps {
-                container('jnlp') { 
+                container('helm') { 
                     sh '''
-                    sed -i "s+namespace:.*+namespace: testing+g" kubernetes/standard/config-kube.yml
-                    cat kubernetes/standard/config-kube.yml
-                    '''
-                }
-                container('kubectl') { 
-                    sh '''
-                    cat $KUBECONFIG
-                    rm -Rf .kube
-                    mkdir .kube
-                    cat $KUBECONFIG > .kube/config
-                    kubectl apply -f kubernetes/standard/config-kube.yml -n testing
+                    # Config Server deployment
+                    cp kubernetes/helm/config-server/values.yaml values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    
+                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace dev
                     '''
                 }
             }
