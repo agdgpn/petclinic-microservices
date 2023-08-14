@@ -31,6 +31,9 @@ spec:
         cpu: "300m"
   - name: docker
     image: docker
+    env:
+    - name: PETCLINIC_HOME
+      value: "/home/jenkins/agent/workspace/petclinic"
     command:
     - cat
     tty: true
