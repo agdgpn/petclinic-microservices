@@ -99,6 +99,7 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
                     docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
                     #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
@@ -115,6 +116,7 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
                     #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
                     #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
