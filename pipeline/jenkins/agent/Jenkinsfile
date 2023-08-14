@@ -283,6 +283,7 @@ pipeline {
             steps {
                 container('helm') { 
                     sh '''
+                    delay 20
                     sh scripts/devops/test_accessibilite.sh http://api-gateway:8080
                     '''
                 }
