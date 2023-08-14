@@ -13,10 +13,10 @@ spec:
     resources:
       requests:
         memory: "2Gi"
-        cpu: "250m"
+        cpu: "300m"
       limits:
         memory: "3Gi"
-        cpu: "300m"
+        cpu: "600"
   - name: helm
     image: alpine/helm:3.11.1
     command:
@@ -33,7 +33,7 @@ spec:
     image: docker
     env:
     - name: PETCLINIC_HOME
-      value: "/home/jenkins/agent/workspace/petclinic"
+      value: "/home/jenkins/agent/workspace/petclinic-prod"
     - name: DOCKER_ID
       value: "agdgpn"
     - name: CONFIG_DOCKER_IMAGE

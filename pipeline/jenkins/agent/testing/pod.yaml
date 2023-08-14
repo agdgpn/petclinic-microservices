@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+  - name: kubectl
+    image: amaceog/kubectl
+    #image: bitnami/kubectl:1.25
+    command:
+    - cat
+    tty: true
+    resources:
+      requests:
+        memory: "500Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "300m"
+  - name: helm
+    image: alpine/helm:3.11.1
+    command:
+    - cat
+    tty: true
+    resources:
+      requests:
+        memory: "300Mi"
+        cpu: "100m"
+      limits:
+        memory: "500Mi"
+        cpu: "300m"
+  - name: docker
+    image: docker
+    env:
+    - name: PETCLINIC_HOME
+      value: "/home/jenkins/agent/workspace/petclinic-testing"
+    - name: DOCKER_ID
+      value: "agdgpn"
+    - name: CONFIG_DOCKER_IMAGE
+      value: "config"
+    - name: DISCOVERY_DOCKER_IMAGE
+      value: "discovery"
+    - name: CUSTOMERS_DOCKER_IMAGE
+      value: "customers"
+    - name: VETS_DOCKER_IMAGE
+      value: "vets"
+    - name: VISITS_DOCKER_IMAGE
+      value: "visits"
+    - name: ADMIN_DOCKER_IMAGE
+      value: "admin"
+    - name: APIGATEWAY_DOCKER_IMAGE
+      value: "api-gateway"
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: dockersock
+      mountPath: /var/run/docker.sock
+  volumes:
+  - name: dockersock
+    hostPath:
+      path: /var/run/docker.sock
