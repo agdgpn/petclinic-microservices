@@ -3,22 +3,22 @@ pipeline {
     {
         DOCKER_TAG = "v.${BUILD_ID}.0"
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")
+        NS = 'testing'
     }                
     agent {
         kubernetes {
             cloud 'testing-kube'
             yamlFile 'pipeline/jenkins/agent/pod.yaml'
             serviceAccount 'jenkins-admin'
-            namespace 'testing'
+            namespace "${NS}"
         }
     }
     stages {
-        stage('Build Config Test') {
+        stage('Build Config in Test') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('docker') {
                     sh '''
-                    #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE local
                     sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
@@ -29,7 +29,6 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
                     sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
@@ -41,7 +40,6 @@ pipeline {
                 container('docker') {
                     sh '''
                     sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    #sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
                     '''
                 }
             }
@@ -94,7 +92,6 @@ pipeline {
                     sh '''
                     docker login -u $DOCKER_ID -p $DOCKER_PASS
                     docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
-                    #sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -105,8 +102,6 @@ pipeline {
                 container('docker') {
                     sh '''
                     docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
                     '''
                 }
@@ -118,8 +113,6 @@ pipeline {
                 container('docker') {
                     sh '''
                     docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
-                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
                     '''
                 }
@@ -127,7 +120,7 @@ pipeline {
         }
 
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
-        stage('MySQL Deployment in testing'){
+        stage('Check/install MySQL in Testing'){
             steps {
                 container('helm') { 
                     script {
@@ -151,17 +144,12 @@ pipeline {
         
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
-            environment
-            {
-                NS = 'testing'
-            }
             steps {
                 container('helm') { 
                     sh '''
                     # Config Server deployment
                     cp kubernetes/helm/config-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
                     helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
@@ -169,10 +157,6 @@ pipeline {
         }
         stage('Deploy  Discovery in Testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
-            environment
-            {
-                NS = 'testing'
-            }
             steps {
                 container('helm') { 
                     sh '''
@@ -186,10 +170,6 @@ pipeline {
         }
         stage('Deploy  Customers in Testing') {
             when { changeset "spring-petclinic-customers-service/**" }
-            environment
-            {
-                NS = 'testing'
-            }
             steps {
                 container('helm') { 
                     sh '''
