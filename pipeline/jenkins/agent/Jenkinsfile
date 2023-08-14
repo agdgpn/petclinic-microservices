@@ -40,7 +40,8 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
+                    sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    #sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE local
                     '''
                 }
             }
@@ -111,6 +112,42 @@ pipeline {
                 }
             }
         }
+        stage('Push Customers Test') {
+            when { changeset "spring-petclinic-discovery-server/**" }
+            steps {
+                container('docker') {
+                    sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE local
+                    #sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
+                    '''
+                }
+            }
+        }
+
+        // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
+        stage('MySQL Deployment in testing'){
+            steps {
+                container('helm') { 
+                    script {
+                        try {
+                            sh '''
+                            # Mysql deployment if its not already deployed
+                            helm status mysql-server -n testing
+                            '''
+                        } catch (err) {
+                            echo "Message: ${err}"
+                            echo "Deploying mysql in testing ns .."
+                            sh '''
+                            cp kubernetes/helm/mysql-server/values.yaml values.yml
+                            helm upgrade --install mysql-server kubernetes/helm/mysql-server --values=values.yml --create-namespace --namespace testing 
+                            '''
+                        }
+                    }
+                }
+            }
+        }
         
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
@@ -143,25 +180,6 @@ pipeline {
                     cp kubernetes/helm/discovery-server/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
-                    '''
-                }
-            }
-        }
-
-
-        
-        stage('Clean up in Testing environment') {
-            environment
-            {
-                NS = 'testing'
-            }
-            steps {
-                container('kubectl') { 
-                    sh '''
-                    # Suppression des pods en failed:
-                    #kubectl delete pods -n $NS --field-selector=status.phase=Failed
-                    # Supprimer les replicaset avec desired state 0:
-                    kubectl -n $NS delete rs $(kubectl -n $NS get rs | awk '{if ($2 + $3 + $4 == 0) print $1}' | grep -v 'NAME')
                     '''
                 }
             }

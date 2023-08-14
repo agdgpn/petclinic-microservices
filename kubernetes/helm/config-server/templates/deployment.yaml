@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "config-server.labels" . | nindent 4 }}
 spec:
-  revisionHistoryLimit: 0
+  revisionHistoryLimit: 0 # Supprime les anciens replicaset 
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
