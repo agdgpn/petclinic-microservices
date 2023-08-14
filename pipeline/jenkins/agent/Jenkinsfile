@@ -281,7 +281,7 @@ pipeline {
         }
         stage('Api-gateway accessibility test in Testing') {
             steps {
-                container('helm') { 
+                container('jnlp') { 
                     sh '''
                     delay 20
                     sh scripts/devops/test_accessibilite.sh http://api-gateway:8080
