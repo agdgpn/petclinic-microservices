@@ -4,7 +4,7 @@
 pipeline { 
     environment
     {
-        DOCKER_TAG = "v.test-${BUILD_ID}.0"
+        DOCKER_TAG = "testing-v.${BUILD_ID}.0"
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")
         NS = 'testing'
         MIDDLEWARE_NS = 'kube-system'
@@ -18,7 +18,7 @@ pipeline {
         }
     }
     stages {
-        stage('Build Config in Test') {
+        stage('Build Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('docker') {
@@ -28,7 +28,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Discovery Test') {
+        stage('Build Discovery image for testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
                 container('docker') {
@@ -38,7 +38,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Cusmomers Test') {
+        stage('Build Cusmomers image for testing') {
             when { changeset "spring-petclinic-customers-service/**" }
             steps {
                 container('docker') {
@@ -48,7 +48,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Vets Test') {
+        stage('Build Vets image for testing') {
             when { changeset "spring-petclinic-vets-service/**" }
             steps {
                 container('docker') {
@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Visits Test') {
+        stage('Build Visits image for testing') {
             when { changeset "spring-petclinic-visits-service/**" }
             steps {
                 container('docker') {
@@ -69,7 +69,7 @@ pipeline {
             }
         }
         
-        stage('Build Admin Test') {
+        stage('Build Admin image for testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
                 container('docker') {
@@ -79,7 +79,7 @@ pipeline {
                 }
             }
         }
-        stage('Build Api-gateway Test') {
+        stage('Build Api-gateway image for testing') {
             when { changeset "spring-petclinic-api-gateway/**" }
             steps {
                 container('docker') {
@@ -89,7 +89,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Config Test') {
+        stage('Push Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('docker') {
@@ -100,7 +100,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Discovery Test') {
+        stage('Push Discovery image for testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
                 container('docker') {
@@ -111,7 +111,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Customers Test') {
+        stage('Push Customers image for testing') {
             when { changeset "spring-petclinic-customers-service/**" }
             steps {
                 container('docker') {
@@ -122,7 +122,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Vets Test') {
+        stage('Push Vets image for testing') {
             when { changeset "spring-petclinic-vets-service/**" }
             steps {
                 container('docker') {
@@ -133,7 +133,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Visits Test') {
+        stage('Push Visits image for testing') {
             when { changeset "spring-petclinic-visits-service/**" }
             steps {
                 container('docker') {
@@ -144,7 +144,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Admin Test') {
+        stage('Push Admin image for testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
                 container('docker') {
@@ -155,7 +155,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Api-Gateway Test') {
+        stage('Push Api-Gateway image for testing') {
             when { changeset "spring-petclinic-api-gateway/**" }
             steps {
                 container('docker') {
@@ -168,7 +168,7 @@ pipeline {
         }
 
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
-        stage('Check/install MySQL in Testing'){
+        stage('Check/install MySQL in testing'){
             steps {
                 container('helm') { 
                     script {
@@ -190,7 +190,7 @@ pipeline {
             }
         }
         
-        stage('Deploy Config in Testing') {
+        stage('Deploy Config app in testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
                 container('helm') { 
@@ -203,7 +203,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Discovery in Testing') {
+        stage('Deploy Discovery app in testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
                 container('helm') { 
@@ -216,7 +216,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Customers in Testing') {
+        stage('Deploy Customers app in testing') {
             when { changeset "spring-petclinic-customers-service/**" }
             steps {
                 container('helm') { 
@@ -229,7 +229,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Vets in Testing') {
+        stage('Deploy Vets app in testing') {
             when { changeset "spring-petclinic-vets-service/**" }
             steps {
                 container('helm') { 
@@ -242,7 +242,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Visits in Testing') {
+        stage('Deploy Visits app in testing') {
             when { changeset "spring-petclinic-visits-service/**" }
             steps {
                 container('helm') { 
@@ -255,7 +255,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Admin in Testing') {
+        stage('Deploy Admin app in testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
                 container('helm') { 
@@ -268,7 +268,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy  Api-gateway in Testing') {
+        stage('Deploy Api-gateway app in testing') {
             when { changeset "spring-petclinic-api-gateway/**" }
             steps {
                 container('helm') { 
@@ -283,7 +283,7 @@ pipeline {
                 }
             }
         }
-        stage('Api-gateway accessibility test in Testing') {
+        stage('Api-gateway accessibility in testing') {
             steps {
                     sh '''
                     sleep 20
