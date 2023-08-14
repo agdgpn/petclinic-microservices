@@ -81,9 +81,12 @@ pipeline {
                 }
             }
         }
-        /*
         stage('Push Config Test') {
             when { changeset "spring-petclinic-config-server/**" }
+            environment
+            {
+                DOCKER_TAG = "v.${BUILD_ID}.0" 
+            }
             steps {
                 container('docker') {
                     sh '''
@@ -95,6 +98,10 @@ pipeline {
         }
         stage('Push Discovery Test') {
             when { changeset "spring-petclinic-discovery-server/**" }
+            environment
+            {
+                DOCKER_TAG = "v.${BUILD_ID}.0" 
+            }
             steps {
                 container('docker') {
                     sh '''
@@ -105,7 +112,7 @@ pipeline {
                 }
             }
         }
-        */
+        
         stage('Deploy Config in Testing') {
             when { changeset "spring-petclinic-config-server/**" }
             environment
