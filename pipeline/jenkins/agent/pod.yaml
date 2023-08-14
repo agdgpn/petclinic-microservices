@@ -50,8 +50,6 @@ spec:
       value: "admin"
     - name: APIGATEWAY_DOCKER_IMAGE
       value: "api-gateway"
-    - name: DOCKER_TAG
-      value: "v.${BUILD_ID}.0"
     command:
     - cat
     tty: true

@@ -10,6 +10,10 @@ pipeline {
     stages {
         stage('Build Config Test') {
             when { changeset "spring-petclinic-config-server/**" }
+            environment
+            {
+                DOCKER_TAG = "v.${BUILD_ID}.0"
+            }
             steps {
                 container('docker') {
                     sh '''
@@ -21,6 +25,10 @@ pipeline {
         }
         stage('Build Discovery Test') {
             when { changeset "spring-petclinic-discovery-server/**" }
+            environment
+            {
+                DOCKER_TAG = "v.${BUILD_ID}.0"
+            }
             steps {
                 container('docker') {
                     sh '''
