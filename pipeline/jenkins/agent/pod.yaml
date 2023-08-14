@@ -5,7 +5,8 @@ spec:
   - name: jnlp
     image: jenkins/inbound-agent:latest
   - name: kubectl
-    image: amaceog/kubectl
+    #image: amaceog/kubectl
+    image: bitnami/kubectl
     command:
     - cat
     tty: true
