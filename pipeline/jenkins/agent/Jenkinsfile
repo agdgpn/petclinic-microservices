@@ -4,6 +4,7 @@ pipeline {
         DOCKER_TAG = "v.${BUILD_ID}.0"
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")
         NS = 'testing'
+        MIDDLEWARE_NS = 'kube-system'
     }                
     agent {
         kubernetes {
@@ -271,7 +272,8 @@ pipeline {
                     sh '''
                     # Visits Service deployment
                     cp kubernetes/helm/api-gateway/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
+                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml                 
                     helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
                     '''
                 }
