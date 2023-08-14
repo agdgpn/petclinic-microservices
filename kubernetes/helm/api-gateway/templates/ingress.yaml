@@ -15,7 +15,7 @@ spec:
   #      - prod.petclinic-datascientest.cloudns.ph
   rules:
   #- host: prod.petclinic-datascientest.cloudns.ph
-    http:
+  - http:
       paths: 
         - path: /
           pathType: Prefix
