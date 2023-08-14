@@ -31,25 +31,6 @@ spec:
         cpu: "300m"
   - name: docker
     image: docker
-    env:
-    - name: PETCLINIC_HOME
-      value: "/home/jenkins/agent/workspace/petclinic"
-    - name: DOCKER_ID
-      value: "agdgpn"
-    - name: CONFIG_DOCKER_IMAGE
-      value: "config"
-    - name: DISCOVERY_DOCKER_IMAGE
-      value: "discovery"
-    - name: CUSTOMERS_DOCKER_IMAGE
-      value: "customers"
-    - name: VETS_DOCKER_IMAGE
-      value: "vets"
-    - name: VISITS_DOCKER_IMAGE
-      value: "visits"
-    - name: ADMIN_DOCKER_IMAGE
-      value: "admin"
-    - name: APIGATEWAY_DOCKER_IMAGE
-      value: "api-gateway"
     command:
     - cat
     tty: true

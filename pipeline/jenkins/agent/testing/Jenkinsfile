@@ -4,10 +4,19 @@
 pipeline { 
     environment
     {
-        DOCKER_TAG = "testing-v.${BUILD_ID}.0"
-        DOCKER_PASS = credentials("DOCKER_HUB_PASS")
-        NS = 'testing'
-        MIDDLEWARE_NS = 'kube-system'
+        PETCLINIC_HOME           = "/var/lib/jenkins/workspace/petclinic" // Racine projet petclinic
+        DOCKER_ID                = "agdgpn"                               // Identifiant docker hub
+        CONFIG_DOCKER_IMAGE      = "config"                               // Image Config-server
+        DISCOVERY_DOCKER_IMAGE   = "discovery"                            // Image Discover-server
+        CUSTOMERS_DOCKER_IMAGE   = "customers"                            // Image Customers-service
+        VETS_DOCKER_IMAGE        = "vets"                                 // Image Vets-service
+        VISITS_DOCKER_IMAGE      = "visits"                               // Image Visits-service
+        ADMIN_DOCKER_IMAGE       = "admin"                                // Image Admin-server
+        APIGATEWAY_DOCKER_IMAGE = "api-gateway"                           // Image Api-gateway
+        DOCKER_TAG = "testing-v.${BUILD_ID}.0"                            // Tag build images
+        DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
+        NS = 'testing'                                                    // Namespace environnement cible
+        MIDDLEWARE_NS = 'kube-system'                                     // Namespace du middleware
     }                
     agent {
         kubernetes {
