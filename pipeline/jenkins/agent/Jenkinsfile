@@ -104,6 +104,7 @@ pipeline {
                         }
                         sh '''
                         sed -i "s+namespace:.*+namespace: testing+g" kubernetes/standard/config-kube.yml
+                        cat kubernetes/standard/discovery-kube.yml
                         kubectl apply -f kubernetes/standard/config-kube.yml -n testing
                         '''
                     }
