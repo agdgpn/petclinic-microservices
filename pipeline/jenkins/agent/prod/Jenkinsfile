@@ -6,7 +6,7 @@ pipeline {
     {
         DOCKER_TAG = "prod-v.${BUILD_ID}.0"
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")
-        NS = 'testing'
+        NS = 'prod'
         MIDDLEWARE_NS = 'kube-system'
     }                
     agent {
