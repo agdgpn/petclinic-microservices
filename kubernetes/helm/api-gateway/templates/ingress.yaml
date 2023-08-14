@@ -3,8 +3,8 @@ kind: Ingress
 metadata:
   name: api-gateway
   annotations:
-    #traefik.ingress.kubernetes.io/router.entrypoints: web
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    #traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.middlewares: traefik-services-strip@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
