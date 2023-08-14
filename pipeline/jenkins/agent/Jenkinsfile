@@ -80,7 +80,7 @@ pipeline {
             steps {
                 container('docker') {
                     sh '''
-                    sh scripts/devops/build_image.sh $API-GATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                    sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
             }
@@ -157,7 +157,7 @@ pipeline {
                 container('docker') {
                     sh '''
                     docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$API-GATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                    docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
                     '''
                 }
             }
