@@ -9,3 +9,9 @@ parameters:
 mountOptions:
   - debug
 volumeBindingMode: Immediate
+allowedTopologies:
+- matchLabelExpressions:
+  - key: topology.kubernetes.io/zone
+    values:
+    - eu-west-3a
+    - eu-west-3b
