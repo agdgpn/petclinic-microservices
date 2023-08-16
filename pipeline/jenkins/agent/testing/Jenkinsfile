@@ -287,7 +287,7 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://pn-macos-vb-ubuntu/
+                    ./scripts/devops/test_accessibilite.sh http://a05f49b4c171d491b929ee20c5cfd5b3-ddc3f099c45757b8.elb.eu-west-3.amazonaws.com/
                     '''
             }
         }
