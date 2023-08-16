@@ -58,5 +58,7 @@ spec:
       mountPath: /var/run/docker.sock
   volumes:
   - name: dockersock
-    hostPath:
-      path: /var/run/docker.sock
+    persistentVolumeClaim:
+      claimName: ebs-claim
+    #hostPath:
+    #  path: /var/run/docker.sock
