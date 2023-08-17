@@ -293,7 +293,10 @@ pipeline {
                     # Visits Service deployment
                     cp kubernetes/helm/api-gateway/values.yaml values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
-                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
+                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                    sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
                     cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
                     helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
                     '''
@@ -304,7 +307,7 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://a7b3fe437c6114f43ac5744647f8b869-ea080cc9357d6564.elb.eu-west-3.amazonaws.com/
+                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph
                     '''
             }
         }
