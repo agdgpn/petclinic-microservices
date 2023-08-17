@@ -28,152 +28,143 @@ pipeline {
     }
     stages {
         stage('Build config & discovery'){
-        parallel {
-            stage('Build Config image for testing') {
-                when { changeset "spring-petclinic-config-server/**" }
-                agent { label "docker-agent-a" }
-                steps {
-                    sh '''
-                    ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
+            parallel {
+                stage('Build Config image for testing') {
+                    when { changeset "spring-petclinic-config-server/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
                 }
-            }
-            stage('Build Discovery image for testing') {
-                when { changeset "spring-petclinic-discovery-server/**" }
-                agent { label "docker-agent-b" }
-                steps {
-                    sh '''
-                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
-            }
-        }}
-        stage('Build customers & vets'){
-        parallel{
-            
-            stage('Build Cusmomers image for testing') {
-                when { changeset "spring-petclinic-customers-service/**" }
-                agent { label "docker-agent-a" }
-                steps {
-                    sh '''
-                    sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
-            }
-            stage('Build Vets image for testing') {
-                when { changeset "spring-petclinic-vets-service/**" }
-                agent { label "docker-agent-b" }
-                steps {
-                    sh '''
-                    sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
+                stage('Build Discovery image for testing') {
+                    when { changeset "spring-petclinic-discovery-server/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
                 }
             }
         }
+        stage('Build customers & vets'){
+            parallel{
+                stage('Build Cusmomers image for testing') {
+                    when { changeset "spring-petclinic-customers-service/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
+                }
+                stage('Build Vets image for testing') {
+                    when { changeset "spring-petclinic-vets-service/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
+                }
+            }
         }
         stage('Build visits & admin'){
-        parallel{
-            stage('Build Visits image for testing') {
-                when { changeset "spring-petclinic-visits-service/**" }
-                agent { label "docker-agent-a" }
-                steps {
-                    sh '''
-                    sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
+            parallel{
+                stage('Build Visits image for testing') {
+                    when { changeset "spring-petclinic-visits-service/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
+                }           
+                stage('Build Admin image for testing') {
+                    when { changeset "spring-petclinic-admin-server/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
                 }
-            }           
-            stage('Build Admin image for testing') {
-                when { changeset "spring-petclinic-admin-server/**" }
-                agent { label "docker-agent-b" }
-                steps {
-                    sh '''
-                    sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
+            }
+        }
+        stage{
+            parallel{
+                stage('Build Api-gateway image for testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
+                }
+
+                stage('Push Config image for testing') {
+                    when { changeset "spring-petclinic-config-server/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
                 }
             }
         }
-        }
-        stage('Build Api-gateway image for testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            agent { label "docker-agent-a" }
-            steps {
-                sh '''
-                sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                '''
+        stage{
+            parallel {
+                stage('Push Discovery image for testing') {
+                    when { changeset "spring-petclinic-discovery-server/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
+                stage('Push Customers image for testing') {
+                    when { changeset "spring-petclinic-customers-service/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
             }
         }
-
-        stage('Push Config image for testing') {
-            when { changeset "spring-petclinic-config-server/**" }
-            agent { label "docker-agent-a" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
+        stage{
+            parallel{
+                stage('Push Admin image for testing') {
+                    when { changeset "spring-petclinic-admin-server/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
+                stage('Push Api-Gateway image for testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                            '''
+                    }
+                }
             }
         }
-        stage('Push Discovery image for testing') {
-            when { changeset "spring-petclinic-discovery-server/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Customers image for testing') {
-            when { changeset "spring-petclinic-customers-service/**" }
-            agent { label "docker-agent-a" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Vets image for testing') {
-            when { changeset "spring-petclinic-vets-service/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$VETS_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Visits image for testing') {
-            when { changeset "spring-petclinic-visits-service/**" }
-            agent { label "docker-agent-a" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$VISITS_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Admin image for testing') {
-            when { changeset "spring-petclinic-admin-server/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Api-Gateway image for testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            agent { label "docker-agent-a" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-            }
-        }
-
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
         stage('Check/install MySQL in testing'){
             steps {
@@ -196,7 +187,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Deploy Config app in testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
@@ -294,7 +284,7 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://a1d4dbfe7d26b4d3b9c169eabbe4cbce-5d266d23f38e6011.elb.eu-west-3.amazonaws.com
+                    ./scripts/devops/test_accessibilite.sh http://a99945169c0464bb981b550dbca12204-dc6e4f6334e38ff6.elb.eu-west-3.amazonaws.com/
                     '''
             }
         }
