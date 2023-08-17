@@ -21,7 +21,7 @@ pipeline {
     agent {
         kubernetes {
             cloud 'testing-kube'
-            yamlFile 'pipeline/jenkins/agent/testing/pod.yaml'
+            yamlFile 'pipeline/jenkins/agent/pod.yaml'
             serviceAccount 'jenkins-admin'
             namespace "testing"
         }
