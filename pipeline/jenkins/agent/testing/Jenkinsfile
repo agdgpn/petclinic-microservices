@@ -16,7 +16,7 @@ pipeline {
         DOCKER_TAG = "testing-v.${BUILD_ID}.0"                            // Tag build images
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
-        MIDDLEWARE_NS = 'kube-system'                                     // Namespace du middleware
+        MIDDLEWARE_NS = 'traefik'                                     // Namespace du middleware
     }                
     agent {
         kubernetes {
