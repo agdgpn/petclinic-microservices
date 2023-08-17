@@ -18,8 +18,8 @@ pipeline {
         NS = 'testing'                                                    // Namespace environnement cible
         MIDDLEWARE_NS = 'kube-system'                                     // Namespace du middleware
     }
+    agent { label "docker-agent" }
     stages {
-        agent { label "docker-agent" }
         stage('Build Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
