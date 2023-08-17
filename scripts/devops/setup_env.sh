@@ -44,3 +44,5 @@ echo '      enabled: true' >> values.yaml
 helm uninstall traefik --namespace=traefik
 helm install traefik traefik/traefik --create-namespace --namespace=traefik --values=values.yaml
 
+kubectl apply -f kubernetes/standard/middleware.yml -n traefik
+
