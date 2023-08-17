@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+  - name: kubectl
+    image: amaceog/kubectl
+    command:
+    - cat
+    tty: true
+    resources:
+      requests:
+        memory: "500Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "300m"
+  - name: helm
+    image: alpine/helm:3.11.1
+    command:
+    - cat
+    tty: true
+    resources:
+      requests:
+        memory: "300Mi"
+        cpu: "100m"
+      limits:
+        memory: "500Mi"
+        cpu: "300m"
