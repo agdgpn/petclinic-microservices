@@ -36,7 +36,7 @@ pipeline {
                     ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
-            }
+            },
             stage('Build Discovery image for testing') {
                 when { changeset "spring-petclinic-discovery-server/**" }
                 agent { label "docker-agent-b" }
@@ -56,7 +56,7 @@ pipeline {
                     sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
-            }
+            },
             stage('Build Vets image for testing') {
                 when { changeset "spring-petclinic-vets-service/**" }
                 agent { label "docker-agent-b" }
@@ -76,8 +76,7 @@ pipeline {
                     sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                     '''
                 }
-            }
-            
+            },            
             stage('Build Admin image for testing') {
                 when { changeset "spring-petclinic-admin-server/**" }
                 agent { label "docker-agent-b" }
@@ -98,7 +97,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Push Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             agent { label "docker-agent-a" }
