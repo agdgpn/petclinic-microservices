@@ -4,6 +4,15 @@
 pipeline { 
     environment
     {
+        PETCLINIC_HOME = "/home/jenkins/agent/workspace/petclinic-testing" 
+        DOCKER_ID = "agdgpn" 
+        CONFIG_DOCKER_IMAGE = "config"
+        DISCOVERY_DOCKER_IMAGE = "discovery"
+        CUSTOMERS_DOCKER_IMAGE = "customers"
+        VETS_DOCKER_IMAGE = "vets"
+        VISITS_DOCKER_IMAGE = "visits"
+        ADMIN_DOCKER_IMAGE = "admin"
+        APIGATEWAY_DOCKER_IMAGE = "api-gateway"
         DOCKER_TAG = "testing-v.${BUILD_ID}.0"                            // Tag build images
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
@@ -21,11 +30,9 @@ pipeline {
         stage('Build Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Build Discovery image for testing') {
