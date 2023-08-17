@@ -93,7 +93,7 @@ pipeline {
                 }
             }
         }
-        stage('Build api-gateway & push discovery'){
+        stage('Build api-gateway & push config'){
             parallel{
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
@@ -116,7 +116,7 @@ pipeline {
                 }
             }
         }
-        stage('Push config & customers'){
+        stage('Push discovery & customers'){
             parallel {
                 stage('Push Discovery image for testing') {
                     when { changeset "spring-petclinic-discovery-server/**" }
@@ -140,30 +140,51 @@ pipeline {
                 }
             }
         }
-        stage('Push admin & api-gateway'){
+        stage('Push visits & vets'){
             parallel{
-                stage('Push Admin image for testing') {
-                    when { changeset "spring-petclinic-admin-server/**" }
-                    agent { label "docker-agent-a" }
-                    steps {
-                        sh '''
-                        docker login -u $DOCKER_ID -p $DOCKER_PASS
-                        docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
-                        '''
-                    }
-                }
-                stage('Push Api-Gateway image for testing') {
-                    when { changeset "spring-petclinic-api-gateway/**" }
+                stage('Push Vets image for testing') {
+                    when { changeset "spring-petclinic-vets-service/**" }
                     agent { label "docker-agent-b" }
                     steps {
                         sh '''
                         docker login -u $DOCKER_ID -p $DOCKER_PASS
-                        docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                        docker push $DOCKER_ID/$VETS_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
+                stage('Push Visits image for testing') {
+                    when { changeset "spring-petclinic-visits-service/**" }
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$VISITS_DOCKER_IMAGE-image:$DOCKER_TAG
                             '''
                     }
                 }
             }
         }
+        stage('Push Admin image for testing') {
+            when { changeset "spring-petclinic-admin-server/**" }
+            agent { label "docker-agent-b" }
+            steps {
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
+            }
+        }
+        stage('Push Api-Gateway image for testing') {
+            when { changeset "spring-petclinic-api-gateway/**" }
+            agent { label "docker-agent-b" }
+            steps {
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
+            }
+        }
+        
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
         stage('Check/install MySQL in testing'){
             steps {
