@@ -200,7 +200,7 @@ pipeline {
                             echo "Deploying mysql in testing ns .."
                             sh '''
                             cp kubernetes/helm/mysql-server/values.yaml values.yml
-                            helm upgrade --install mysql-server kubernetes/helm/mysql-server --values=values.yml --create-namespace --namespace testing 
+                            helm upgrade --install mysql-server kubernetes/helm/mysql-server --values=values.yml --create-namespace --namespace $NS 
                             '''
                         }
                     }
@@ -304,7 +304,7 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://a99945169c0464bb981b550dbca12204-dc6e4f6334e38ff6.elb.eu-west-3.amazonaws.com/
+                    ./scripts/devops/test_accessibilite.sh http://a7b3fe437c6114f43ac5744647f8b869-ea080cc9357d6564.elb.eu-west-3.amazonaws.com/
                     '''
             }
         }
