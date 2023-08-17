@@ -17,19 +17,11 @@ pipeline {
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
         MIDDLEWARE_NS = 'kube-system'                                     // Namespace du middleware
-    }                
-    agent {
-        kubernetes {
-            cloud 'testing-kube'
-            yamlFile 'pipeline/jenkins/agent/testing/pod.yaml'
-            serviceAccount 'jenkins-admin'
-            namespace "testing"
-        }
     }
     stages {
+        agent { label "docker-agent" }
         stage('Build Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
-            agent { label "docker-agent" }
             steps {
                 sh '''
                 ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
@@ -39,139 +31,121 @@ pipeline {
         stage('Build Discovery image for testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $DISCOVERY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Build Cusmomers image for testing') {
             when { changeset "spring-petclinic-customers-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $CUSTOMERS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Build Vets image for testing') {
             when { changeset "spring-petclinic-vets-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $VETS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Build Visits image for testing') {
             when { changeset "spring-petclinic-visits-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         
         stage('Build Admin image for testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Build Api-gateway image for testing') {
             when { changeset "spring-petclinic-api-gateway/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                    '''
-                }
+                sh '''
+                sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                '''
             }
         }
         stage('Push Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Discovery image for testing') {
             when { changeset "spring-petclinic-discovery-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$DISCOVERY_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Customers image for testing') {
             when { changeset "spring-petclinic-customers-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$CUSTOMERS_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Vets image for testing') {
             when { changeset "spring-petclinic-vets-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$VETS_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$VETS_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Visits image for testing') {
             when { changeset "spring-petclinic-visits-service/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$VISITS_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$VISITS_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Admin image for testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
             }
         }
         stage('Push Api-Gateway image for testing') {
             when { changeset "spring-petclinic-api-gateway/**" }
             steps {
-                container('docker') {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_ID -p $DOCKER_PASS
+                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                '''
+            }
+        }                
+        agent {
+            kubernetes {
+                cloud 'testing-kube'
+                yamlFile 'pipeline/jenkins/agent/testing/pod.yaml'
+                serviceAccount 'jenkins-admin'
+                namespace "testing"
             }
         }
 
