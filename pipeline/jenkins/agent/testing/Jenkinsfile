@@ -93,21 +93,20 @@ pipeline {
                 }
             }
         }
-        stage('Build api-gateway & push config'){
+        stage('Build api-gateway & push discovery'){
             parallel{
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
-                    agent { label "docker-agent-a" }
+                    agent { label "docker-agent-b" }
                     steps {
                         sh '''
                         sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                         '''
                     }
                 }
-
                 stage('Push Config image for testing') {
                     when { changeset "spring-petclinic-config-server/**" }
-                    agent { label "docker-agent-b" }
+                    agent { label "docker-agent-a" }
                     steps {
                         sh '''
                         docker login -u $DOCKER_ID -p $DOCKER_PASS
@@ -117,11 +116,11 @@ pipeline {
                 }
             }
         }
-        stage('Push discovery & customers'){
+        stage('Push config & customers'){
             parallel {
                 stage('Push Discovery image for testing') {
                     when { changeset "spring-petclinic-discovery-server/**" }
-                    agent { label "docker-agent-a" }
+                    agent { label "docker-agent-b" }
                     steps {
                         sh '''
                         docker login -u $DOCKER_ID -p $DOCKER_PASS
@@ -131,7 +130,7 @@ pipeline {
                 }
                 stage('Push Customers image for testing') {
                     when { changeset "spring-petclinic-customers-service/**" }
-                    agent { label "docker-agent-b" }
+                    agent { label "docker-agent-a" }
                     steps {
                         sh '''
                         docker login -u $DOCKER_ID -p $DOCKER_PASS
@@ -141,7 +140,7 @@ pipeline {
                 }
             }
         }
-        stage('Push vets & visits'){
+        stage('Push admin & api-gateway'){
             parallel{
                 stage('Push Admin image for testing') {
                     when { changeset "spring-petclinic-admin-server/**" }
