@@ -29,6 +29,7 @@ pipeline {
     stages {
         stage('Build Config image for testing') {
             when { changeset "spring-petclinic-config-server/**" }
+            agent { label "docker-agent" }
             steps {
                 sh '''
                 ./scripts/devops/build_image.sh $CONFIG_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
