@@ -93,7 +93,7 @@ pipeline {
                 }
             }
         }
-        stage{
+        stage('Build api-gateway & push config'){
             parallel{
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
@@ -117,7 +117,7 @@ pipeline {
                 }
             }
         }
-        stage{
+        stage('Push discovery & customers'){
             parallel {
                 stage('Push Discovery image for testing') {
                     when { changeset "spring-petclinic-discovery-server/**" }
@@ -141,7 +141,7 @@ pipeline {
                 }
             }
         }
-        stage{
+        stage('Push vets & visits'){
             parallel{
                 stage('Push Admin image for testing') {
                     when { changeset "spring-petclinic-admin-server/**" }
