@@ -303,18 +303,12 @@ pipeline {
                 }
             }
         }
-        stage('Api-gateway accessibility in testing') {             
-            environment
-            {
-                PETCLINIC_HOME = "/home/jenkins/workspace/petclinic-testing"
-            }
+        stage('Api-gateway accessibility in testing') {
             steps {
-            node('master') {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph
+                    ./scripts/devops/test_accessibilite.sh http://testing.petclinic-datascientest.cloudns.ph
                     '''
-            }
             }
         }
     }
