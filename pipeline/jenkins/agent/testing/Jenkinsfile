@@ -304,12 +304,13 @@ pipeline {
             }
         }
         stage('Api-gateway accessibility in testing') {
-            /*steps {*/
+            steps {
             node('master') {
                     sh '''
                     sleep 20
                     ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph
                     '''
+            }
             }
         }
     }
