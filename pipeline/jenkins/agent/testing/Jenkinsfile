@@ -303,7 +303,11 @@ pipeline {
                 }
             }
         }
-        stage('Api-gateway accessibility in testing') {
+        stage('Api-gateway accessibility in testing') {             
+            environment
+            {
+                PETCLINIC_HOME = "/home/jenkins/workspace/petclinic-testing"
+            }
             steps {
             node('master') {
                     sh '''
