@@ -186,6 +186,8 @@ pipeline {
         }
         
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
+        // Uniquement utilise on veut utiliser mysql en tant que container dans EKS
+        /*
         stage('Check/install MySQL in testing'){
             steps {
                 container('helm') { 
@@ -207,6 +209,7 @@ pipeline {
                 }
             }
         }
+        */
         stage('Deploy Config app in testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
@@ -307,7 +310,8 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
                     '''
             }
         }
