@@ -213,16 +213,15 @@ pipeline {
         */
         // Check MYSQL AWS RDS availability
         stage('MySQL RDS accessibility') {
+            agent { label "docker-agent-b" }
             steps {
-                container('helm') { 
-                    sh '''
-                    # Update RDS URL
-                    sed -i "s+host = .*+host = ${AWS_MYSQL_RDS}+g" scripts/devops/db-tools/my.cnf   
-                    echo "Mysql confi file:"
-                    cat scripts/devops/db-tools/my.cnf                 
-                    ./scripts/devops/db-tools/test_db_connection.sh
-                    '''
-                }
+                sh '''
+                # Update RDS URL
+                sed -i "s+host = .*+host = ${AWS_MYSQL_RDS}+g" scripts/devops/db-tools/my.cnf   
+                echo "Mysql confi file:"
+                cat scripts/devops/db-tools/my.cnf                 
+                ./scripts/devops/db-tools/test_db_connection.sh
+                '''
             }
         }
         stage('Deploy Config app in testing') {
