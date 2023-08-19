@@ -220,7 +220,7 @@ pipeline {
                     sed -i "s+host = .*+host = ${AWS_MYSQL_RDS}+g" scripts/devops/db-tools/my.cnf   
                     echo "Mysql confi file:"
                     cat scripts/devops/db-tools/my.cnf                 
-                    sh scripts/devops/db-tools/test_db_connection.sh
+                    ./scripts/devops/db-tools/test_db_connection.sh
                     '''
                 }
             }
