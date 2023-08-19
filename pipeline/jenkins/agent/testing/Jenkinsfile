@@ -310,7 +310,8 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
                     '''
             }
         }
