@@ -17,7 +17,7 @@ pipeline {
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
         MIDDLEWARE_NS = 'traefik'                                     // Namespace du middleware
-        AWS_MYSQL_RDS = "testing-petclinic-database.cljowf4o15oe.eu-west-3.rds.amazonaws.com"
+        AWS_MYSQL_RDS = "petclinic-testing-database.cljowf4o15oe.eu-west-3.rds.amazonaws.com"
     }                
     agent {
         kubernetes {
