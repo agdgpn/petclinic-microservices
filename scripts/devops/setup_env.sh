@@ -62,7 +62,7 @@ then
     # 2.b Installation de Cert-Manager au sein du cluster
     helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.10.1 --set installCRDs=true
     kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
-    # 12.c  Ajout du plugin Kubectl
+    # 1.c  Ajout du plugin Kubectl
     curl -L -o kubectl-cert-manager.tar.gz https://github.com/jetstack/cert-manager/releases/latest/download/kubectl-cert_manager-linux-amd64.tar.gz
     tar xzf kubectl-cert-manager.tar.gz
     sudo mv kubectl-cert_manager /usr/local/bin

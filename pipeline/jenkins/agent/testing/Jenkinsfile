@@ -17,6 +17,7 @@ pipeline {
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")                      // Token dockerhub stocké dans jenkins master
         NS = 'testing'                                                    // Namespace environnement cible
         MIDDLEWARE_NS = 'traefik'                                     // Namespace du middleware
+        AWS_MYSQL_RDS = "petclinic-testing-database.cljowf4o15oe.eu-west-3.rds.amazonaws.com"
     }                
     agent {
         kubernetes {
@@ -210,6 +211,19 @@ pipeline {
             }
         }
         */
+        // Check MYSQL AWS RDS availability
+        stage('MySQL RDS accessibility') {
+            agent { label "docker-agent-b" }
+            steps {
+                sh '''
+                # Update RDS URL
+                sed -i "s+host = .*+host = ${AWS_MYSQL_RDS}+g" scripts/devops/db-tools/my.cnf   
+                echo "Mysql confi file:"
+                cat scripts/devops/db-tools/my.cnf                 
+                ./scripts/devops/db-tools/test_db_connection.sh
+                '''
+            }
+        }
         stage('Deploy Config app in testing') {
             when { changeset "spring-petclinic-config-server/**" }
             steps {
@@ -307,12 +321,28 @@ pipeline {
             }
         }
         stage('Api-gateway accessibility in testing') {
-            steps {
-                    sh '''
-                    sleep 20
-                    #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
-                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
-                    '''
+            parallel{
+                stage('Accessibility testing on agent-a') {
+                    agent { label "docker-agent-a" }
+                    steps {
+                        sh '''
+                        sleep 20
+                        #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        '''
+                    }
+                }
+                stage('Accessibility testing on agent-b') {
+                    agent { label "docker-agent-b" }
+                    steps {
+                        agent { label "docker-agent-b" }
+                        sh '''
+                        sleep 20
+                        #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        '''
+                    }
+                }
             }
         }
     }

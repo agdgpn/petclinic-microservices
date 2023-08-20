@@ -304,7 +304,9 @@ pipeline {
             steps {
                     sh '''
                     sleep 20
-                    ./scripts/devops/test_accessibilite.sh http://a7b3fe437c6114f43ac5744647f8b869-ea080cc9357d6564.elb.eu-west-3.amazonaws.com/
+                    ./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                    #./scripts/devops/test_accessibilite.sh https://prod.petclinic-datascientest.cloudns.ph/
+                    #./scripts/devops/test_accessibilite.sh http://a7b3fe437c6114f43ac5744647f8b869-ea080cc9357d6564.elb.eu-west-3.amazonaws.com/
                     '''
             }
         }
