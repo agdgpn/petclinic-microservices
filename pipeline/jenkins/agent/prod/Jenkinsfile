@@ -74,7 +74,7 @@ pipeline {
                 }
             }
         }
-        stage('Build visits & admin'){
+        stage('Build visits & api-gateway'){
             parallel{
                 stage('Build Visits image for prod') {
                     when { changeset "spring-petclinic-visits-service/**" }
@@ -266,7 +266,7 @@ pipeline {
                 }
             }
         }        
-        stage('Deploy customers & vets'){
+        stage('Deploy visits & api-gateway'){
             parallel{            
                 stage('Deploy Visits app in prod') {
                     when { changeset "spring-petclinic-visits-service/**" }
