@@ -322,11 +322,22 @@ pipeline {
         }
         stage('Api-gateway accessibility in testing') {
             steps {
-                    sh '''
-                    sleep 20
-                    #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
-                    ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
-                    '''
+                    step {
+                        agent { label "docker-agent-a" }
+                        sh '''
+                        sleep 20
+                        #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        '''
+                    }
+                    step {
+                        agent { label "docker-agent-b" }
+                        sh '''
+                        sleep 20
+                        #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
+                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        '''
+                    }
             }
         }
     }
