@@ -321,15 +321,19 @@ pipeline {
             }
         }
         stage('Api-gateway accessibility in testing') {
-            steps {
-                    step {
-                        agent { label "docker-agent-a" }
+            parallel{
+                stage('Accessibility testing on agent-a') {
+                    agent { label "docker-agent-a" }
+                    steps {
                         sh '''
                         sleep 20
                         #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
                         ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
                         '''
                     }
+                }
+                stage('Accessibility testing on agent-b') {
+                    agent { label "docker-agent-b" }
                     step {
                         agent { label "docker-agent-b" }
                         sh '''
@@ -338,6 +342,7 @@ pipeline {
                         ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
                         '''
                     }
+                }
             }
         }
     }
