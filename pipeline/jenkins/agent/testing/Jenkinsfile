@@ -82,18 +82,7 @@ pipeline {
                         sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                         '''
                     }
-                }  
-                /*         
-                stage('Build Admin image for testing') {
-                    when { changeset "spring-petclinic-admin-server/**" }
-                    agent { label "docker-agent-b" }
-                    steps {
-                        sh '''
-                        sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                        '''
-                    }
-                }*/
-                
+                } 
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
                     agent { label "docker-agent-b" }
@@ -107,16 +96,6 @@ pipeline {
         }
         stage('Push config & discovery'){
             parallel{
-                /*
-                stage('Build Api-gateway image for testing') {
-                    when { changeset "spring-petclinic-api-gateway/**" }
-                    agent { label "docker-agent-b" }
-                    steps {
-                        sh '''
-                        sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                        '''
-                    }
-                }*/
                 stage('Push Config image for testing') {
                     when { changeset "spring-petclinic-config-server/**" }
                     agent { label "docker-agent-a" }
@@ -187,18 +166,6 @@ pipeline {
                 }
             }
         }
-        /*
-        stage('Push Admin image for testing') {
-            when { changeset "spring-petclinic-admin-server/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        */
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
         // Uniquement utilise on veut utiliser mysql en tant que container dans EKS
         /*
@@ -296,8 +263,7 @@ pipeline {
                     }
                 }
             }
-        }
-        
+        }        
         stage("Deploy visits & admin in testing"){
             parallel {
                 stage('Deploy Visits app in testing') {
@@ -313,21 +279,6 @@ pipeline {
                         }
                     }
                 }
-                /*
-                stage('Deploy Admin app in testing') {
-                    when { changeset "spring-petclinic-admin-server/**" }
-                    steps {
-                        container('helm') { 
-                            sh '''
-                            # Visits Service deployment
-                            cp kubernetes/helm/admin-server/values.yaml values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                            helm upgrade --install admin-server kubernetes/helm/admin-server --values=values.yml --create-namespace --namespace $NS
-                            '''
-                        }
-                    }
-                }*/
-                
                 stage('Deploy Api-gateway app in testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
                     steps {
