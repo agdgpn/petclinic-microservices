@@ -72,7 +72,7 @@ pipeline {
                 }
             }
         }
-        stage('Build visits & admin'){
+        stage('Build visits & api-gateway'){
             parallel{
                 stage('Build Visits image for testing') {
                     when { changeset "spring-petclinic-visits-service/**" }
@@ -82,20 +82,7 @@ pipeline {
                         sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                         '''
                     }
-                }           
-                stage('Build Admin image for testing') {
-                    when { changeset "spring-petclinic-admin-server/**" }
-                    agent { label "docker-agent-b" }
-                    steps {
-                        sh '''
-                        sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
-                        '''
-                    }
-                }
-            }
-        }
-        stage('Build api-gateway & push config'){
-            parallel{
+                } 
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
                     agent { label "docker-agent-b" }
@@ -105,6 +92,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push config & discovery'){
+            parallel{
                 stage('Push Config image for testing') {
                     when { changeset "spring-petclinic-config-server/**" }
                     agent { label "docker-agent-a" }
@@ -114,11 +105,7 @@ pipeline {
                         docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
                         '''
                     }
-                }
-            }
-        }
-        stage('Push discovery & customers'){
-            parallel {
+                }                
                 stage('Push Discovery image for testing') {
                     when { changeset "spring-petclinic-discovery-server/**" }
                     agent { label "docker-agent-b" }
@@ -129,6 +116,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push customers & vets'){
+            parallel {
                 stage('Push Customers image for testing') {
                     when { changeset "spring-petclinic-customers-service/**" }
                     agent { label "docker-agent-a" }
@@ -139,10 +130,6 @@ pipeline {
                         '''
                     }
                 }
-            }
-        }
-        stage('Push visits & vets'){
-            parallel{
                 stage('Push Vets image for testing') {
                     when { changeset "spring-petclinic-vets-service/**" }
                     agent { label "docker-agent-b" }
@@ -153,6 +140,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push visits & api-gateway'){
+            parallel{
                 stage('Push Visits image for testing') {
                     when { changeset "spring-petclinic-visits-service/**" }
                     agent { label "docker-agent-a" }
@@ -163,29 +154,18 @@ pipeline {
                             '''
                     }
                 }
+                stage('Push Api-Gateway image for testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
             }
         }
-        stage('Push Admin image for testing') {
-            when { changeset "spring-petclinic-admin-server/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$ADMIN_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        stage('Push Api-Gateway image for testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
         // Uniquement utilise on veut utiliser mysql en tant que container dans EKS
         /*
@@ -224,99 +204,98 @@ pipeline {
                 '''
             }
         }
-        stage('Deploy Config app in testing') {
-            when { changeset "spring-petclinic-config-server/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Config Server deployment
-                    cp kubernetes/helm/config-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
-                    '''
+        stage("Deploy config & discorvery in testing"){
+            parallel {
+                stage('Deploy Config app in testing') {
+                    when { changeset "spring-petclinic-config-server/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Config Server deployment
+                            cp kubernetes/helm/config-server/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                            helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
+                }
+                stage('Deploy Discovery app in testing') {
+                    when { changeset "spring-petclinic-discovery-server/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Discovery Server deployment
+                            cp kubernetes/helm/discovery-server/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                            helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
             }
         }
-        stage('Deploy Discovery app in testing') {
-            when { changeset "spring-petclinic-discovery-server/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Discovery Server deployment
-                    cp kubernetes/helm/discovery-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
-                    '''
+        stage("Deploy customers & vets in testing"){
+            parallel {
+                stage('Deploy Customers app in testing') {
+                    when { changeset "spring-petclinic-customers-service/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Customers Service deployment
+                            cp kubernetes/helm/customers-service/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                            helm upgrade --install customers-service kubernetes/helm/customers-service --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
+                }
+                stage('Deploy Vets app in testing') {
+                    when { changeset "spring-petclinic-vets-service/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Vets Service deployment
+                            cp kubernetes/helm/vets-service/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                            helm upgrade --install vets-service kubernetes/helm/vets-service --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
             }
-        }
-        stage('Deploy Customers app in testing') {
-            when { changeset "spring-petclinic-customers-service/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Customers Service deployment
-                    cp kubernetes/helm/customers-service/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install customers-service kubernetes/helm/customers-service --values=values.yml --create-namespace --namespace $NS
-                    '''
+        }        
+        stage("Deploy visits & admin in testing"){
+            parallel {
+                stage('Deploy Visits app in testing') {
+                    when { changeset "spring-petclinic-visits-service/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Visits Service deployment
+                            cp kubernetes/helm/visits-service/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                            helm upgrade --install visits-service kubernetes/helm/visits-service --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
-            }
-        }
-        stage('Deploy Vets app in testing') {
-            when { changeset "spring-petclinic-vets-service/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Vets Service deployment
-                    cp kubernetes/helm/vets-service/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install vets-service kubernetes/helm/vets-service --values=values.yml --create-namespace --namespace $NS
-                    '''
-                }
-            }
-        }
-        stage('Deploy Visits app in testing') {
-            when { changeset "spring-petclinic-visits-service/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Visits Service deployment
-                    cp kubernetes/helm/visits-service/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install visits-service kubernetes/helm/visits-service --values=values.yml --create-namespace --namespace $NS
-                    '''
-                }
-            }
-        }
-        stage('Deploy Admin app in testing') {
-            when { changeset "spring-petclinic-admin-server/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Visits Service deployment
-                    cp kubernetes/helm/admin-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install admin-server kubernetes/helm/admin-server --values=values.yml --create-namespace --namespace $NS
-                    '''
-                }
-            }
-        }
-        stage('Deploy Api-gateway app in testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Visits Service deployment
-                    cp kubernetes/helm/api-gateway/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
-                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
-                    cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
-                    helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
-                    '''
+                stage('Deploy Api-gateway app in testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Visits Service deployment
+                            cp kubernetes/helm/api-gateway/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
+                            sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
+                            cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
+                            helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
             }
         }
