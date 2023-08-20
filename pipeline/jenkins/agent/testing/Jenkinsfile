@@ -334,7 +334,7 @@ pipeline {
                 }
                 stage('Accessibility testing on agent-b') {
                     agent { label "docker-agent-b" }
-                    step {
+                    steps {
                         agent { label "docker-agent-b" }
                         sh '''
                         sleep 20
