@@ -72,7 +72,7 @@ pipeline {
                 }
             }
         }
-        stage('Build visits & admin'){
+        stage('Build visits & api-gateway'){
             parallel{
                 stage('Build Visits image for testing') {
                     when { changeset "spring-petclinic-visits-service/**" }
@@ -82,7 +82,8 @@ pipeline {
                         sh scripts/devops/build_image.sh $VISITS_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                         '''
                     }
-                }           
+                }  
+                /*         
                 stage('Build Admin image for testing') {
                     when { changeset "spring-petclinic-admin-server/**" }
                     agent { label "docker-agent-b" }
@@ -91,11 +92,8 @@ pipeline {
                         sh scripts/devops/build_image.sh $ADMIN_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
                         '''
                     }
-                }
-            }
-        }
-        stage('Build api-gateway & push config'){
-            parallel{
+                }*/
+                
                 stage('Build Api-gateway image for testing') {
                     when { changeset "spring-petclinic-api-gateway/**" }
                     agent { label "docker-agent-b" }
@@ -105,6 +103,20 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push config & discovery'){
+            parallel{
+                /*
+                stage('Build Api-gateway image for testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        sh scripts/devops/build_image.sh $APIGATEWAY_DOCKER_IMAGE dockerhub $DOCKER_ID $DOCKER_TAG
+                        '''
+                    }
+                }*/
                 stage('Push Config image for testing') {
                     when { changeset "spring-petclinic-config-server/**" }
                     agent { label "docker-agent-a" }
@@ -114,11 +126,7 @@ pipeline {
                         docker push $DOCKER_ID/$CONFIG_DOCKER_IMAGE-image:$DOCKER_TAG
                         '''
                     }
-                }
-            }
-        }
-        stage('Push discovery & customers'){
-            parallel {
+                }                
                 stage('Push Discovery image for testing') {
                     when { changeset "spring-petclinic-discovery-server/**" }
                     agent { label "docker-agent-b" }
@@ -129,6 +137,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push customers & vets'){
+            parallel {
                 stage('Push Customers image for testing') {
                     when { changeset "spring-petclinic-customers-service/**" }
                     agent { label "docker-agent-a" }
@@ -139,10 +151,6 @@ pipeline {
                         '''
                     }
                 }
-            }
-        }
-        stage('Push visits & vets'){
-            parallel{
                 stage('Push Vets image for testing') {
                     when { changeset "spring-petclinic-vets-service/**" }
                     agent { label "docker-agent-b" }
@@ -153,6 +161,10 @@ pipeline {
                         '''
                     }
                 }
+            }
+        }
+        stage('Push visits & api-gateway'){
+            parallel{
                 stage('Push Visits image for testing') {
                     when { changeset "spring-petclinic-visits-service/**" }
                     agent { label "docker-agent-a" }
@@ -163,8 +175,19 @@ pipeline {
                             '''
                     }
                 }
+                stage('Push Api-Gateway image for testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    agent { label "docker-agent-b" }
+                    steps {
+                        sh '''
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
+                        '''
+                    }
+                }
             }
         }
+        /*
         stage('Push Admin image for testing') {
             when { changeset "spring-petclinic-admin-server/**" }
             agent { label "docker-agent-b" }
@@ -175,17 +198,7 @@ pipeline {
                 '''
             }
         }
-        stage('Push Api-Gateway image for testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            agent { label "docker-agent-b" }
-            steps {
-                sh '''
-                docker login -u $DOCKER_ID -p $DOCKER_PASS
-                docker push $DOCKER_ID/$APIGATEWAY_DOCKER_IMAGE-image:$DOCKER_TAG
-                '''
-            }
-        }
-        
+        */
         // Déploiement de MYSQL sur l'environnement de TESTING si pas encore fait.
         // Uniquement utilise on veut utiliser mysql en tant que container dans EKS
         /*
@@ -300,6 +313,7 @@ pipeline {
                         }
                     }
                 }
+                /*
                 stage('Deploy Admin app in testing') {
                     when { changeset "spring-petclinic-admin-server/**" }
                     steps {
@@ -312,24 +326,25 @@ pipeline {
                             '''
                         }
                     }
-                }
-            }
-        }
-        stage('Deploy Api-gateway app in testing') {
-            when { changeset "spring-petclinic-api-gateway/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Visits Service deployment
-                    cp kubernetes/helm/api-gateway/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
-                    sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                    sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
-                    cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
-                    helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
-                    '''
+                }*/
+                
+                stage('Deploy Api-gateway app in testing') {
+                    when { changeset "spring-petclinic-api-gateway/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Visits Service deployment
+                            cp kubernetes/helm/api-gateway/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
+                            sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
+                            cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
+                            helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
             }
         }
