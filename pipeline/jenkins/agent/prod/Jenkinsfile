@@ -13,10 +13,10 @@ pipeline {
         VISITS_DOCKER_IMAGE = "visits"
         ADMIN_DOCKER_IMAGE = "admin"
         APIGATEWAY_DOCKER_IMAGE = "api-gateway"
-        DOCKER_TAG = "prod-v.${BUILD_ID}.0"                            // Tag build images
-        DOCKER_PASS = credentials("DOCKER_HUB_PASS")                   // Token dockerhub stocké dans jenkins master
+        DOCKER_TAG = "prod-v.${BUILD_ID}.0"                         // Tag build images
+        DOCKER_PASS = credentials("DOCKER_HUB_PASS")                // Token dockerhub stocké dans jenkins master
         NS = 'prod'                                                 // Namespace environnement cible
-        MIDDLEWARE_NS = 'traefik'                                     // Namespace du middleware
+        MIDDLEWARE_NS = 'traefik'                                   // Namespace du middleware
     }                
     agent {
         kubernetes {
@@ -27,6 +27,7 @@ pipeline {
         }
     }
     stages {
+
         stage('Build config & discovery'){
             parallel {
                 stage('Build Config image for prod') {
