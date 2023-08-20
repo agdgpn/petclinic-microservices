@@ -224,29 +224,33 @@ pipeline {
                 '''
             }
         }
-        stage('Deploy Config app in testing') {
-            when { changeset "spring-petclinic-config-server/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Config Server deployment
-                    cp kubernetes/helm/config-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
-                    helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
-                    '''
+        stage("Deploy config & discorvery in testing"){
+            parallel {
+                stage('Deploy Config app in testing') {
+                    when { changeset "spring-petclinic-config-server/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Config Server deployment
+                            cp kubernetes/helm/config-server/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml                    
+                            helm upgrade --install config-server kubernetes/helm/config-server --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
-            }
-        }
-        stage('Deploy Discovery app in testing') {
-            when { changeset "spring-petclinic-discovery-server/**" }
-            steps {
-                container('helm') { 
-                    sh '''
-                    # Discovery Server deployment
-                    cp kubernetes/helm/discovery-server/values.yaml values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
-                    '''
+                stage('Deploy Discovery app in testing') {
+                    when { changeset "spring-petclinic-discovery-server/**" }
+                    steps {
+                        container('helm') { 
+                            sh '''
+                            # Discovery Server deployment
+                            cp kubernetes/helm/discovery-server/values.yaml values.yml
+                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                            helm upgrade --install discovery-server kubernetes/helm/discovery-server --values=values.yml --create-namespace --namespace $NS
+                            '''
+                        }
+                    }
                 }
             }
         }
