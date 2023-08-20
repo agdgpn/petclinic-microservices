@@ -18,7 +18,6 @@ pipeline {
         NS = 'prod'                                                 // Namespace environnement cible
         MIDDLEWARE_NS = 'traefik'                                     // Namespace du middleware                                     // Namespace du middleware
         AWS_MYSQL_RDS = "petclinic-prod-database.cljowf4o15oe.eu-west-3.rds.amazonaws.com"
-        MIDDLEWARE_NS = 'traefik'                                   // Namespace du middleware
     }                
     agent {
         kubernetes {
