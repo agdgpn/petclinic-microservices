@@ -53,6 +53,10 @@ else
 fi
 # Installation du middleware traefik
 kubectl apply -f kubernetes/standard/middleware.yml -n traefik
+# Déploiement de prometheus dans EKS
+kubectl apply -f kubernetes/standard/prometheus-kube.yml -n $ENV_NAME
+# Déploiement de grafana dans EKS
+kubectl apply -f kubernetes/standard/grafana-kube.yml -n $ENV_NAME
 
 # 2. Installation du fournisseur de cerificats
 cert_status=$(kubectl get ns cert-manager -o json | jq .status.phase -r)

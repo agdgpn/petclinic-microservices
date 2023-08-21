@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-server
+  labels:
+    app: grafana-server
+  #namespace: dev 
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grafana-server
+  template:
+    metadata:
+      labels:
+        app: grafana-server
+    spec:
+      containers:
+      - image: agdgpn/grafana-image
+        name: grafana-server
+        ports:
+          - containerPort: 3000
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "256Mi" 
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-server
+  #namespace: dev
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: grafana-server
+status:
+  loadBalancer: {}
