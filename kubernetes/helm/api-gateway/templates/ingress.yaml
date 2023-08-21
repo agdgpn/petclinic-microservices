@@ -13,8 +13,6 @@ spec:
     - secretName: dev-secret
       hosts:
         - prod.petclinic-datascientest.cloudns.ph
-        - prometheus.petclinic-datascientest.cloudns.ph
-        - grafana.petclinic-datascientest.cloudns.ph
   rules:
   - host: prod.petclinic-datascientest.cloudns.ph
     http:
@@ -68,23 +66,3 @@ spec:
               name: vets-service
               port: 
                 number: 8083
-  - host: prometheus.petclinic-datascientest.cloudns.ph
-    http:
-      paths: 
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: prometheus-server
-              port: 
-                number: 9090
-  - host: grafana.petclinic-datascientest.cloudns.ph
-    http:
-      paths: 
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: grafana-server
-              port: 
-                number: 3000
