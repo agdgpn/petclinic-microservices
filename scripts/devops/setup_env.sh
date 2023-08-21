@@ -3,6 +3,14 @@
 # Prépare l environnment
 ENV_NAME=$1
 ns_status=$(kubectl get ns $ENV_NAME -o json | jq .status.phase -r)
+if [[ $ENV_NAME = testing ]]
+then
+    OTHER=prod
+fi
+if [[ $ENV_NAME = prod ]]
+then
+    OTHER=testing
+fi
 
 if [[ $ns_status != "Active" ]]
 then
@@ -51,6 +59,19 @@ then
 else
     echo "Traefik ingress controller is already installed"
 fi
+# Installation du middleware traefik
+kubectl apply -f kubernetes/standard/middleware.yml -n traefik
+# Déploiement de prometheus dans EKS
+sed -i "s+.*secretName.*+    - secretName: $ENV_NAME-secret+g" kubernetes/standard/prometheus-kube.yml
+sed -i "s+.*host: .*+  - host: prometheus-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml
+sed -i "s+.*prometheus-$OTHER.petclinic-datascientest.cloudns.ph+        - prometheus-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml 
+kubectl apply -f kubernetes/standard/prometheus-kube.yml -n $ENV_NAME
+# Déploiement de grafana dans EKS
+sed -i "s+.*secretName.*+    - secretName: $ENV_NAME-secret+g" kubernetes/standard/grafana-kube.yml
+sed -i "s+.*host: .*+  - host: grafana-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/grafana-kube.yml
+sed -i "s+.*grafana-$OTHER.petclinic-datascientest.cloudns.ph+        - grafana-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/grafana-kube.yml 
+kubectl apply -f kubernetes/standard/grafana-kube.yml -n $ENV_NAME
+
 # 2. Installation du fournisseur de cerificats
 cert_status=$(kubectl get ns cert-manager -o json | jq .status.phase -r)
 if [[ $cert_status != "Active" ]]

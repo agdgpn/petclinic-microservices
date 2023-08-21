@@ -1,92 +1,91 @@
 version: '2'
 
 services:
+  mysql-server:
+    image: mysql:5.7.8
+    container_name: mysql-server
+    networks:
+     - petclinic_network
+    expose:
+     - 3306
+    ports:
+     - 3306:3306
+    environment:
+     - MYSQL_ROOT_PASSWORD=petclinic
+     - MYSQL_DATABASE=petclinic
   config-server:
-    image: springcommunity/spring-petclinic-config-server
+    image: config-image
     container_name: config-server
-    mem_limit: 512M
+    volumes:
+     - /tmp:/root
+    networks:
+     - petclinic_network
+    expose:
+     - 8888
     ports:
      - 8888:8888
-
+    environment:
+     - GIT_USER=ndiayepi
+     - GIT_PASS=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
   discovery-server:
-    image: springcommunity/spring-petclinic-discovery-server
+    image: discovery-image
     container_name: discovery-server
-    mem_limit: 512M
+    volumes:
+     - /tmp:/root
+    command: 
+     - '20'
+     - docker
+    networks:
+     - petclinic_network
     depends_on:
-      - config-server
-    entrypoint: ["./dockerize","-wait=tcp://config-server:8888","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
+     - config-server
+    expose:
+     - 8761
     ports:
      - 8761:8761
-
   customers-service:
-    image: springcommunity/spring-petclinic-customers-service
-    container_name: customers-service
-    mem_limit: 512M
+    image: customers-image
+    container_name: customer-service
+    volumes:
+     - /tmp:/root
+    command: 
+     - '30'
+     - docker,mysql
+    networks:
+     - petclinic_network
     depends_on:
      - config-server
      - discovery-server
-    entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
+    expose:
+     - 8081
     ports:
-    - 8081:8081
-
-  visits-service:
-    image: springcommunity/spring-petclinic-visits-service
-    container_name: visits-service
-    mem_limit: 512M
-    depends_on:
-     - config-server
-     - discovery-server
-    entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
-    ports:
-     - 8082:8082
-
-  vets-service:
-    image: springcommunity/spring-petclinic-vets-service
-    container_name: vets-service
-    mem_limit: 512M
-    depends_on:
-     - config-server
-     - discovery-server
-    entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
-    ports:
-     - 8083:8083
+     - 8081:8081
 
   api-gateway:
-    image: springcommunity/spring-petclinic-api-gateway
+    image: api-gateway-image
     container_name: api-gateway
-    mem_limit: 512M
+    volumes:
+     - /tmp:/root
+    command: 
+     - '60'
+     - docker
+    networks:
+     - petclinic_network
     depends_on:
      - config-server
      - discovery-server
-    entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
+    expose:
+     - 8080
     ports:
      - 8080:8080
-
-  tracing-server:
-    image: openzipkin/zipkin
-    container_name: tracing-server
-    mem_limit: 512M
-    environment:
-    - JAVA_OPTS=-XX:+UnlockExperimentalVMOptions -Djava.security.egd=file:/dev/./urandom
-    ports:
-     - 9411:9411
-
-  admin-server:
-    image: springcommunity/spring-petclinic-admin-server
-    container_name: admin-server
-    mem_limit: 512M
-    depends_on:
-     - config-server
-     - discovery-server
-    entrypoint: ["./dockerize","-wait=tcp://discovery-server:8761","-timeout=60s","--","java", "org.springframework.boot.loader.JarLauncher"]
-    ports:
-     - 9090:9090
 
   ## Grafana / Prometheus
 
   grafana-server:
     build: ./docker/grafana
     container_name: grafana-server
+    networks:
+     - petclinic_network
     mem_limit: 256M
     ports:
     - 3000:3000
@@ -94,6 +93,11 @@ services:
   prometheus-server:
     build: ./docker/prometheus
     container_name: prometheus-server
+    networks:
+     - petclinic_network
     mem_limit: 256M
     ports:
     - 9091:9090
+networks:
+  petclinic_network:
+    external: true
