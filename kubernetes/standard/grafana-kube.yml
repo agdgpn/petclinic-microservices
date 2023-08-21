@@ -53,11 +53,11 @@ metadata:
 spec:
   ingressClassName: traefik
   tls:
-    - secretName: testing-secret
+    - secretName: prod-secret
       hosts:
-        - grafana-testing.petclinic-datascientest.cloudns.ph
+        - grafana-prod.petclinic-datascientest.cloudns.ph
   rules:
-  - host: grafana-testing.petclinic-datascientest.cloudns.ph
+  - host: grafana-prod.petclinic-datascientest.cloudns.ph
     http:
       paths: 
         - path: /
