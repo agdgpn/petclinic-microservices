@@ -4,7 +4,6 @@ metadata:
   name: grafana-server
   labels:
     app: grafana-server
-  #namespace: dev 
 spec:
   replicas: 1
   strategy:
@@ -42,3 +41,29 @@ spec:
     app: grafana-server
 status:
   loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-server
+  annotations:
+    #traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: dev-secret
+      hosts:
+        - grafana.petclinic-datascientest.cloudns.ph
+  rules:
+  - host: grafana.petclinic-datascientest.cloudns.ph
+    http:
+      paths: 
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: grafana-server
+              port: 
+                number: 3000
