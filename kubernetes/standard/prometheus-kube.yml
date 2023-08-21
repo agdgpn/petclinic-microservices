@@ -54,11 +54,11 @@ metadata:
 spec:
   ingressClassName: traefik
   tls:
-    - secretName: testing-secret
+    - secretName: prod-secret
       hosts:
-        - prometheus-testing.petclinic-datascientest.cloudns.ph
+        - prometheus-prod.petclinic-datascientest.cloudns.ph
   rules:
-  - host: prometheus-testing.petclinic-datascientest.cloudns.ph
+  - host: prometheus-prod.petclinic-datascientest.cloudns.ph
     http:
       paths: 
         - path: /
