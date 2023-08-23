@@ -289,8 +289,8 @@ pipeline {
                             sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
                             sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
                             sed -i "s+.*secretName.*+    - secretName: testing-secret+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                            sed -i "s+.*host: .*+  - host: testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
-                            sed -i "s+.*prod.petclinic-datascientest.cloudns.ph+        - testing.petclinic-datascientest.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
+                            sed -i "s+.*host: .*+  - host: testing.app-petclinic.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml
+                            sed -i "s+.*prod.app-petclinic.cloudns.ph+        - testing.app-petclinic.cloudns.ph+g" kubernetes/helm/api-gateway/templates/ingress.yaml 
                             cat kubernetes/helm/api-gateway/templates/ingress.yaml                 
                             helm upgrade --install api-gateway kubernetes/helm/api-gateway --values=values.yml --create-namespace --namespace $NS
                             '''
@@ -307,7 +307,7 @@ pipeline {
                         sh '''
                         sleep 20
                         #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
-                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        ./scripts/devops/test_accessibilite.sh https://testing.app-petclinic.cloudns.ph/
                         '''
                     }
                 }
@@ -318,7 +318,7 @@ pipeline {
                         sh '''
                         sleep 20
                         #./scripts/devops/test_accessibilite.sh http://api-gateway:8080
-                        ./scripts/devops/test_accessibilite.sh https://testing.petclinic-datascientest.cloudns.ph/
+                        ./scripts/devops/test_accessibilite.sh https://testing.app-petclinic.cloudns.ph/
                         '''
                     }
                 }

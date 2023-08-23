@@ -61,15 +61,20 @@ else
 fi
 # Installation du middleware traefik
 kubectl apply -f kubernetes/standard/middleware.yml -n traefik
+
+# Mise a jour manifest kubernetes/standard/prometheus-kube.yml
+sed -i "s+.*secretName.*+    - secretName: $ENV_NAME.prometheus-secret+g" kubernetes/standard/prometheus-kube.yml
+sed -i "s+.*host: .*+  - host: $ENV_NAME.prometheus-petclinic.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml
+sed -i "s+.*$OTHER.*petclinic.cloudns.ph+        - $ENV_NAME.prometheus-petclinic.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml 
 # Déploiement de prometheus dans EKS
-sed -i "s+.*secretName.*+    - secretName: $ENV_NAME-secret+g" kubernetes/standard/prometheus-kube.yml
-sed -i "s+.*host: .*+  - host: prometheus-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml
-sed -i "s+.*prometheus-$OTHER.petclinic-datascientest.cloudns.ph+        - prometheus-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/prometheus-kube.yml 
 kubectl apply -f kubernetes/standard/prometheus-kube.yml -n $ENV_NAME
+
+# Mise a jour manifest kubernetes/standard/grafana-kube.yml
+sed -i "s+.*secretName.*+    - secretName: $ENV_NAME.grafana-secret+g" kubernetes/standard/grafana-kube.yml
+sed -i "s+.*host: .*+  - host: $ENV_NAME.grafana-petclinic.cloudns.ph+g" kubernetes/standard/grafana-kube.yml
+sed -i "s+.*$OTHER.*petclinic.cloudns.ph+        - $ENV_NAME.grafana-petclinic.cloudns.ph+g" kubernetes/standard/grafana-kube.yml 
+
 # Déploiement de grafana dans EKS
-sed -i "s+.*secretName.*+    - secretName: $ENV_NAME-secret+g" kubernetes/standard/grafana-kube.yml
-sed -i "s+.*host: .*+  - host: grafana-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/grafana-kube.yml
-sed -i "s+.*grafana-$OTHER.petclinic-datascientest.cloudns.ph+        - grafana-$ENV_NAME.petclinic-datascientest.cloudns.ph+g" kubernetes/standard/grafana-kube.yml 
 kubectl apply -f kubernetes/standard/grafana-kube.yml -n $ENV_NAME
 
 # 2. Installation du fournisseur de cerificats
@@ -95,7 +100,9 @@ then
     echo 'spec:' >> myClusterIssuer.yaml
     echo '  acme:' >> myClusterIssuer.yaml
     echo '    # L URL du serveur ACME' >> myClusterIssuer.yaml
+    # Environnement de prod limite de certifications faible
     echo '    server: https://acme-v02.api.letsencrypt.org/directory' >> myClusterIssuer.yaml
+    #echo '    server: https://acme-staging-v02.api.letsencrypt.org/directory' >> myClusterIssuer.yaml 
     echo '    # Adresse e-mail utilisée pour l enregistrement ACME' >> myClusterIssuer.yaml
     echo '    email: agdgpn@gmail.com' >> myClusterIssuer.yaml
     echo '    # Nom d un secret utilisé pour stocker la clé privée du compte ACME' >> myClusterIssuer.yaml
