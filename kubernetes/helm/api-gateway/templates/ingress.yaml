@@ -12,10 +12,10 @@ spec:
   tls:
     - secretName: dev-secret
       hosts:
-        - prod.petclinic-datascientest.cloudns.ph
+        - prod.app-petclinic.cloudns.ph
   rules:
-  #- host: prod.petclinic-datascientest.cloudns.ph
-  - http:
+  - host: prod.app-petclinic.cloudns.ph
+    http:
       paths: 
         - path: /
           pathType: Prefix
