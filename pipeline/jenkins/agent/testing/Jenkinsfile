@@ -284,7 +284,7 @@ pipeline {
                     steps {
                         container('helm') { 
                             sh '''
-                            # Visits Service deployment
+                            # Api Gateway deployment
                             cp kubernetes/helm/api-gateway/values.yaml values.yml
                             sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml   
                             sed -i "s+traefik.ingress.kubernetes.io/router.middlewares.*+traefik.ingress.kubernetes.io/router.middlewares: $MIDDLEWARE_NS-services-strip@kubernetescrd+g" kubernetes/helm/api-gateway/templates/ingress.yaml
